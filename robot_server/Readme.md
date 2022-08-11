@@ -155,7 +155,7 @@ The pupose of the server is to handle all connection to the robot, to monitor it
 
 ### How it works
 
-Everything is implemented from core python libraries. [ConfigParser](https://docs.python.org/3/library/configparser.html) is used to read and generate the config file if it doesn't exist, [tkinter](https://docs.python.org/3/library/tkinter.html) which is a wrapper for [Tcl/Tk](https://www.tcl.tk/) is used for the GUI. For FIFO (First In First Out) operations, a [deque](https://cplusplus.com/reference/deque/deque/) objects are used. Both servers are implemented using [socket](https://docs.python.org/3/library/socket.html). In order to avoid confusion, all timestamps are [UNIX](https://unixtime.org/) times, rounded up the nearest millisecond.
+Everything is implemented from core python libraries. [ConfigParser](https://docs.python.org/3/library/configparser.html) is used to read and generate the config file if it doesn't exist, [tkinter](https://docs.python.org/3/library/tkinter.html) which is a wrapper for [Tcl/Tk](https://www.tcl.tk/) is used for the GUI. For FIFO (First In First Out) operations, [deque](https://cplusplus.com/reference/deque/deque/) objects are used. Both servers are implemented using [socket](https://docs.python.org/3/library/socket.html). In order to avoid confusion, all timestamps are [UNIX](https://unixtime.org/) times, rounded up the nearest millisecond.
 
 There are three threads, these are executing concurrently:
 
