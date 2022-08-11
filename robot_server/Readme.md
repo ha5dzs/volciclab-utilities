@@ -159,13 +159,13 @@ Everything is implemented from core python libraries. [ConfigParser](https://doc
 
 There are three threads, these are executing concurrently:
 
-* The TCP server.
+* **The TCP server.**
 While the actual creation of the TCP socket is easy, specific measures needed to be taken for timeouts. Also, the robot sometimes closes the connection, and dedicated timeouts had to be introduced, hence the nested `try:` and `except:` statements. The contents of the packets are analysed using Python's string functions.
 
-* The UDP server
+* **The UDP server.**
 This implementation is fairly straightforward: the socket is created, and the contents are analysed. Some messages require responses, which is implemented here.
 
-* The GUI refresher
+* **The GUI refresher.**
 This should be done in the main thread, but it didn't work. For the data strings that require live updates, the latest information is fetched here. For the log strings, which are ever-increasing, special measures needed to be taken to find what is the latest line. Also, if the user decides to delete the log, a diagnostic message is added here.
 
 The main thread draws the GUI and handles user-induced events such as mouse clicks, dialogue boxes and prompts.
@@ -233,26 +233,33 @@ Once the robot is connected, the server's main window work as a glorified status
 
 ![The main window, explained](img/connected_window_explained.png)
 
-* **The top left corner**
+* **The top left corner:**
 There are three lines here: The first line is the robot status. You can access this string directly from Matlab.
 The second line is the robot's current pose expressed as the tool contact point. This is in the X, Z, Z, Rx, Ry, Rz format: X, Y, Z are cartesian coordinates with respect to the base the robot, and Rx, Rx, Rz are the Euler angles in radians. You can also access this directly from Matlab too.
 The third line is the current force measured on the wrist joint of the robot, after compensating for the tool's weight itself, again, accessible from Matlab as well. The unit is Newton.
 
-* **The top right corner**
+* **The top right corner:**
 This shows how many instructions are currently stored on the server. You can send a high number of instructions for the robot to execute and do something else in the meantime in your code, or you can send a single instruction, wait for it to execute, and then send it an other one. This non-blocking/blocking method of operation can be useful when automating experiments, or using collaborative robotics.
 
-* **The middle section**
+* **The middle section:**
 These are just read from the `.ini` file and displayed. You can set the port to whatever you want to. If the server is running on a different computer than your code, then the `udp_server_ip` should be set to that computer's IP address.
 For the Robot connection, you may need to update the URScript using the teach pendant, and this big numbers help reading the server's screen from a distance.
 
-* **The bottom section**
+* **The bottom section:**
 This is a simple log window. Normally you don't need this, but if there are connection anomalies or timeout problems, this may be helpful. Each line has three sections: the time, the label, and the log content.
+
 The labels are:
+
 `INFO;` General information displayed by the server code
+
 `SRVR;` Network-related messages
+
 `S<-R;` Robot to server message
+
 `C->S;` Client (your code) to server message
+
 `S->R;` Server to Robot message
+
 The log content is directly extracted from the network packets. They are plain ASCII text and completely unencrypted.
 
 ## The Matlab code (Volciclab Robotics Toolbox)
