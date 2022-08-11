@@ -1,0 +1,223 @@
+def volciclab_robot_control_iter2():
+  step_count_07d15846_056c_489d_849b_523f2a70fbe8 = 0.0
+  thread Step_Counter_Thread_ee7ae928_7267_4c3a_b258_59ed1fc6ac10():
+    while (True):
+      step_count_07d15846_056c_489d_849b_523f2a70fbe8 = step_count_07d15846_056c_489d_849b_523f2a70fbe8 + 1.0
+      sync()
+    end
+  end
+  run Step_Counter_Thread_ee7ae928_7267_4c3a_b258_59ed1fc6ac10()
+  set_safety_mode_transition_hardness(1)
+  set_target_payload(0.020000, [0.000000, 0.000000, 0.000000], [0.000002, 0.000002, 0.000002, 0.000000, 0.000000, 0.000000])
+  set_gravity([0.0, 0.0, 9.82])
+  set_standard_analog_input_domain(0, 1)
+  set_standard_analog_input_domain(1, 1)
+  set_tool_analog_input_domain(0, 1)
+  set_tool_analog_input_domain(1, 1)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_input_actions_to_default()
+  set_tcp(p[0.0,0.0,0.0,0.0,0.0,0.0])
+  modbus_add_signal("127.0.0.1", 255, 400, 3, "MODBUS_1", False)
+  modbus_set_signal_update_frequency("MODBUS_1", 10)
+  modbus_add_signal("127.0.0.1", 255, 401, 3, "MODBUS_2", False)
+  modbus_set_signal_update_frequency("MODBUS_2", 10)
+  modbus_add_signal("127.0.0.1", 255, 402, 3, "MODBUS_3", False)
+  modbus_set_signal_update_frequency("MODBUS_3", 10)
+  modbus_add_signal("127.0.0.1", 255, 400, 2, "MODBUS_4", False)
+  modbus_set_signal_update_frequency("MODBUS_4", 10)
+  modbus_add_signal("127.0.0.1", 255, 401, 2, "MODBUS_5", False)
+  modbus_set_signal_update_frequency("MODBUS_5", 10)
+  modbus_add_signal("127.0.0.1", 255, 402, 2, "MODBUS_6", False)
+  modbus_set_signal_update_frequency("MODBUS_6", 10)
+  modbus_set_runstate_dependent_choice("MODBUS_1",0)
+  modbus_set_runstate_dependent_choice("MODBUS_2",0)
+  modbus_set_runstate_dependent_choice("MODBUS_3",0)
+  set_tool_communication(False, 115200, 0, 1, 1.5, 3.5)
+  set_tool_output_mode(0)
+  set_tool_digital_output_mode(0, 1)
+  set_tool_digital_output_mode(1, 1)
+  set_tool_voltage(0)
+  global My_laptop=p[0.37210999999999994,-0.5543799999999999,0.17111,-0.24416661269018833,-1.7487795435078342,1.416471282499612]
+  # begin: URCap Installation Node
+  #   Source: Remote TCP & Toolpath, 1.3.0.build16, Universal Robots A/S
+  #   Type: Remote TCP & Toolpath
+  # end: URCap Installation Node
+  def execute_opcode():
+    $ 11 "execute_opcode" "noBreak"
+    $ 12 "'Each function is implemented here'"
+    # 'Each function is implemented here'
+    $ 13 "socket_send_string('I am busy.')"
+    socket_send_string("I am busy.")
+    $ 14 "'Move tool contact point'"
+    # 'Move tool contact point'
+    $ 15 "If ( opcode≟'move_tcp' )  and ( freedrive ≟ False )"
+    if (( opcode == "move_tcp" )   and  ( freedrive  ==   False  )):
+      $ 16 "socket_send_string('Please send argument.')"
+      socket_send_string("Please send argument.")
+      $ 17 "new_pose_arg≔socket_read_ascii_float(6)"
+      global new_pose_arg=socket_read_ascii_float(6)
+      $ 18 "If new_pose_arg[0]≠6"
+      if (new_pose_arg[0] != 6):
+        $ 19 "socket_send_string('Invalid argument received for move_tcp')"
+        socket_send_string("Invalid argument received for move_tcp")
+        $ 20 "Popup: move_tcp received an invalid argument. Check the robot log and the server window for details."
+        popup("move_tcp received an invalid argument. Check the robot log and the server window for details.", "Error", False, True, blocking=True)
+      end
+      $ 21 "move_tcp_pose≔p[new_pose_arg[1], new_pose_arg[2], new_pose_arg[3], new_pose_arg[4], new_pose_arg[5], new_pose_arg[6]]"
+      global move_tcp_pose=p[new_pose_arg[1], new_pose_arg[2], new_pose_arg[3], new_pose_arg[4], new_pose_arg[5], new_pose_arg[6]]
+      $ 22 "If is_within_safety_limits(move_tcp_pose)≟ True "
+      if (is_within_safety_limits(move_tcp_pose) ==   True  ):
+        $ 23 "movej(move_tcp_pose)"
+        movej(move_tcp_pose)
+      else:
+        $ 24 "Else" "noBreak"
+        $ 25 "socket_send_string('This pose is not reachable.')"
+        socket_send_string("This pose is not reachable.")
+        $ 26 "Popup: The specified pose is not reachable. Check the robot's log and the server window for details,"
+        popup("The specified pose is not reachable. Check the robot's log and the server window for details,", "Error", False, True, blocking=True)
+      end
+      $ 27 "textmsg('move_tcp argument is: ', move_tcp_pose)"
+      textmsg("move_tcp argument is: ", move_tcp_pose)
+      $ 28 "new_pose_arg≔socket_read_ascii_float(6)"
+      global new_pose_arg=socket_read_ascii_float(6)
+      $ 29 "socket_send_string('I'm not busy.')"
+      socket_send_string("I'm not busy.")
+    end
+    $ 30 "'Update tool contact point'"
+    # 'Update tool contact point'
+    $ 31 "If ( opcode≟'update_tcp' )  and ( freedrive ≟ False )"
+    if (( opcode == "update_tcp" )   and  ( freedrive  ==   False  )):
+      $ 32 "socket_send_string('Please send argument.')"
+      socket_send_string("Please send argument.")
+      $ 33 "new_tcp_arg≔socket_read_ascii_float(6)"
+      global new_tcp_arg=socket_read_ascii_float(6)
+      $ 34 "If new_tcp_arg[0]≠6"
+      if (new_tcp_arg[0] != 6):
+        $ 35 "socket_send_string('Invalid argument received for update_tcp')"
+        socket_send_string("Invalid argument received for update_tcp")
+        $ 36 "Popup: update_tcp received an invalid argument. Check the robot log and the server window for details."
+        popup("update_tcp received an invalid argument. Check the robot log and the server window for details.", "Error", False, True, blocking=True)
+      end
+      $ 37 "new_tcp≔p[new_tcp_arg[1], new_tcp_arg[2], new_tcp_arg[3], new_tcp_arg[4], new_tcp_arg[5], new_tcp_arg[6]]"
+      global new_tcp=p[new_tcp_arg[1], new_tcp_arg[2], new_tcp_arg[3], new_tcp_arg[4], new_tcp_arg[5], new_tcp_arg[6]]
+      $ 38 "set_tcp(new_tcp)"
+      set_tcp(new_tcp)
+      $ 39 "socket_send_string('I'm not busy.')"
+      socket_send_string("I'm not busy.")
+    end
+    $ 40 "'Enable/disable freedrive'"
+    # 'Enable/disable freedrive'
+    $ 41 "If opcode≟'freedrive'"
+    if (opcode == "freedrive"):
+      $ 42 "socket_send_string('Please send argument.')"
+      socket_send_string("Please send argument.")
+      $ 43 "freedrive_arg = socket_read_string()"
+      freedrive_arg = socket_read_string()
+      $ 44 "If (freedrive_arg ≟ 'ON')  or (freedrive_arg ≟ 'On') or (freedrive_arg ≟ 'on')"
+      if ((freedrive_arg  ==  "ON")   or  (freedrive_arg  ==  "On") or (freedrive_arg  ==  "on")):
+        $ 45 "freedrive_mode()"
+        freedrive_mode()
+        $ 46 "freedrive =  True "
+        freedrive =   True
+        $ 47 "socket_send_string('Freedrive mode enabled.')"
+        socket_send_string("Freedrive mode enabled.")
+        $ 48 "textmsg('Freedrive mode is on.')"
+        textmsg("Freedrive mode is on.")
+      else:
+        $ 49 "Else" "noBreak"
+        $ 50 "end_freedrive_mode()"
+        end_freedrive_mode()
+        $ 51 "freedrive =  False "
+        freedrive =   False
+        $ 52 "socket_send_string('Freedrive mode disabled.')"
+        socket_send_string("Freedrive mode disabled.")
+        $ 53 "textmsg('Freedrive mode is off.')"
+        textmsg("Freedrive mode is off.")
+      end
+    end
+    $ 54 "'Clean up'"
+    # 'Clean up'
+    $ 55 "opcode≔'nothing'"
+    global opcode="nothing"
+  end
+  def check_for_instruction():
+    $ 56 "check_for_instruction" "noBreak"
+    $ 57 "'This one hammers on the server, and checks for new instructions'"
+    # 'This one hammers on the server, and checks for new instructions'
+    $ 58 "If freedrive ≟ False "
+    if (freedrive  ==   False  ):
+      $ 59 "'Only report not busy, if not in freedrive.'"
+      # 'Only report not busy, if not in freedrive.'
+      $ 60 "socket_send_string('I'm not busy. ')"
+      socket_send_string("I'm not busy. ")
+    end
+    $ 61 "opcode≔'nothing'"
+    global opcode="nothing"
+    $ 62 "Loop opcode≟('nothing')  or opcode≟''"
+    while (opcode == ("nothing")   or  opcode == ""):
+      $ 63 "socket_send_string('Please tell me what to do. ')"
+      socket_send_string("Please tell me what to do. ")
+      $ 64 "opcode = socket_read_string()"
+      opcode = socket_read_string()
+      $ 65 "'Update TCP on the server when there is nothing else to do.'"
+      # 'Update TCP on the server when there is nothing else to do.'
+      $ 66 "current_tcp≔get_actual_tcp_pose()"
+      global current_tcp= get_actual_tcp_pose ()
+      $ 67 "current_force≔force()"
+      global current_force= force ()
+      $ 68 "socket_send_string(current_tcp)"
+      socket_send_string(current_tcp)
+      $ 69 "socket_send_string('f=')"
+      socket_send_string("f=")
+      $ 70 "socket_send_string(current_force)"
+      socket_send_string(current_force)
+      $ 71 "socket_send_string('; ')"
+      socket_send_string("; ")
+    end
+    $ 72 "'Let the server know that we are on it'"
+    # 'Let the server know that we are on it'
+    $ 73 "textmsg('Received opcode is: ', opcode)"
+    textmsg("Received opcode is: ", opcode)
+  end
+  def connect_to_server():
+    $ 74 "connect_to_server" "noBreak"
+    $ 75 "'Connect to the Python server'"
+    # 'Connect to the Python server'
+    $ 76 "textmsg('Connecting to server.')"
+    textmsg("Connecting to server.")
+    $ 77 "open≔socket_open(server_ip,8472)"
+    global open=socket_open(server_ip,8472)
+    $ 78 "Loop open≟ False "
+    while (open ==   False  ):
+      $ 79 "open≔socket_open(server_ip,8472)"
+      global open=socket_open(server_ip,8472)
+      $ 80 "Wait: 1.0"
+      sleep(1.0)
+    end
+    $ 81 "textmsg('Connected.')"
+    textmsg("Connected.")
+  end
+  while (True):
+    $ 1 "Robot Program"
+    $ 2 "'Global variables for telling the robot what to do. One instruction at a time.'"
+    # 'Global variables for telling the robot what to do. One instruction at a time.'
+    $ 3 "server_ip≔'192.168.42.65'"
+    global server_ip="192.168.42.65"
+    $ 4 "opcode≔'nothing'"
+    global opcode="nothing"
+    $ 5 "freedrive≔ False "
+    global freedrive=  False  
+    $ 6 "op_argument≔'null'"
+    global op_argument="null"
+    $ 7 "Call connect_to_server"
+    connect_to_server()
+    $ 8 "Loop"
+    while (True):
+      $ 9 "Call check_for_instruction"
+      check_for_instruction()
+      $ 10 "Call execute_opcode"
+      execute_opcode()
+    end
+  end
+end

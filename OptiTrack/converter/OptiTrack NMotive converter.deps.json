@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "OptiTrack NMotive converter/1.0.0": {
+        "dependencies": {
+          "NMotive": "2.1.0.0"
+        },
+        "runtime": {
+          "OptiTrack NMotive converter.dll": {}
+        }
+      },
+      "NMotive/2.1.0.0": {
+        "runtime": {
+          "NMotive.dll": {
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OptiTrack NMotive converter/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NMotive/2.1.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

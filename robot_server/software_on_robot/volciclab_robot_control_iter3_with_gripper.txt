@@ -1,0 +1,95 @@
+ Program
+   Robot Program
+     'Global variables for telling the robot what to do. One instruction at a time.'
+     server_ip≔"192.168.42.65"
+     opcode≔"nothing"
+     freedrive≔ False 
+     op_argument≔"null"
+     'Initialise gripper'
+     rq_activate_and_wait()
+     Call connect_to_server
+     Loop
+       Call check_for_instruction
+       Call execute_opcode
+   execute_opcode
+     'Each function is implemented here'
+     socket_send_string("I am busy.")
+     'Move tool contact point'
+     If ( opcode≟"move_tcp" )  and ( freedrive ≟ False )
+       socket_send_string("Please send argument.")
+       new_pose_arg≔socket_read_ascii_float(6)
+       If new_pose_arg[0]≠6
+         socket_send_string("Invalid argument received for move_tcp")
+         Popup: move_tcp received an invalid argument. Check the robot log and the server window for details.
+       move_tcp_pose≔p[new_pose_arg[1], new_pose_arg[2], new_pose_arg[3], new_pose_arg[4], new_pose_arg[5], new_pose_arg[6]]
+       If is_within_safety_limits(move_tcp_pose)≟ True 
+         movej(move_tcp_pose)
+       Else
+         socket_send_string("This pose is not reachable.")
+         Popup: The specified pose is not reachable. Check the robot's log and the server window for details,
+       textmsg("move_tcp argument is: ", move_tcp_pose)
+       new_pose_arg≔socket_read_ascii_float(6)
+       socket_send_string("I'm not busy.")
+     'Update tool contact point'
+     If ( opcode≟"update_tcp" )  and ( freedrive ≟ False )
+       socket_send_string("Please send argument.")
+       new_tcp_arg≔socket_read_ascii_float(6)
+       If new_tcp_arg[0]≠6
+         socket_send_string("Invalid argument received for update_tcp")
+         Popup: update_tcp received an invalid argument. Check the robot log and the server window for details.
+       new_tcp≔p[new_tcp_arg[1], new_tcp_arg[2], new_tcp_arg[3], new_tcp_arg[4], new_tcp_arg[5], new_tcp_arg[6]]
+       set_tcp(new_tcp)
+       socket_send_string("I'm not busy.")
+     'Enable/disable freedrive'
+     If opcode≟"freedrive"
+       socket_send_string("Please send argument.")
+       freedrive_arg = socket_read_string()
+       If (freedrive_arg ≟ "ON")  or (freedrive_arg ≟ "On") or (freedrive_arg ≟ "on")
+         freedrive_mode()
+         freedrive =  True 
+         socket_send_string("Freedrive mode enabled.")
+         textmsg("Freedrive mode is on.")
+       Else
+         end_freedrive_mode()
+         freedrive =  False 
+         socket_send_string("Freedrive mode disabled.")
+         textmsg("Freedrive mode is off.")
+     'Clean up'
+     If ( opcode≟"set_gripper" )  and ( freedrive ≟ False )
+       socket_send_string("Please send argument.")
+       grip_pos_arg≔socket_read_ascii_float(1)
+       If grip_pos_arg[0]≠1
+         socket_send_string("Invalid argument received for set_gripper")
+         Popup: set_gripper received an invalid argument. Check the robot log and the server window for details.
+       If grip_pos_arg[1] > 100  or  grip_pos_arg[1] < 0
+         socket_send_string("Invalid argument received for set_gripper: Number must be between 0 and 100.")
+         Popup: set_gripper received an invalid argument. Check the robot log and the server window for details.
+       rq_move_and_wait_norm(grip_pos_arg[1])
+       socket_send_string("I'm not busy.")
+     opcode≔"nothing"
+   check_for_instruction
+     'This one hammers on the server, and checks for new instructions'
+     If freedrive ≟ False 
+       'Only report not busy, if not in freedrive.'
+       socket_send_string("I'm not busy. ")
+     opcode≔"nothing"
+     Loop opcode≟("nothing")  or opcode≟""
+       socket_send_string("Please tell me what to do. ")
+       opcode = socket_read_string()
+       'Update TCP on the server when there is nothing else to do.'
+       current_tcp≔get_actual_tcp_pose()
+       current_force≔force()
+       socket_send_string(current_tcp)
+       socket_send_string("f=")
+       socket_send_string(current_force)
+       socket_send_string("; ")
+     'Let the server know that we are on it'
+     textmsg("Received opcode is: ", opcode)
+   connect_to_server
+     'Connect to the Python server'
+     textmsg("Connecting to server.")
+     open≔socket_open(server_ip,8472)
+     Loop open≟ False 
+       open≔socket_open(server_ip,8472)
+       Wait: 1.0
+     textmsg("Connected.")
