@@ -4,7 +4,7 @@ This is a repository of all the internally-made scripts and applications for the
 
 ## The Volciclab Network Infrastructure
 
-When you come visit the lab, it doesn't look much, but there are more than 120 metres of Ethernet cables routed in the truss assembly. Here is why:
+When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why:
 
 ![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure.png "Now you probably see why I needed to write this all down!")
 
@@ -32,18 +32,18 @@ For the purpose of software development and firmware upgrades, the Volciclab net
 
 ## Hardware (links to the appropriate sites)
 
-### * [Optotrak motion tracker](http://www.github.com/volcic/motom-toolbox)
+### [Optotrak motion tracker](http://www.github.com/volcic/motom-toolbox)
 
 This is the legacy motion tracker. It's no longer sold by the manufacturer, mostly because the internal components have been discontinued about a decade ago and they finally ran out.
 
-### * [OptiTrack motion tracker](OptiTrack/Readme.md)
+### [OptiTrack motion tracker](OptiTrack/Readme.md)
 
 This one is the fancy new one with the copious number of cameras. There is a simple matlab interface available, and is much easier to use than the Optotrak.
 
-### * [Robot server](robot_server/readme.md)
+### [Robot server](robot_server/readme.md)
 
 While you can control the robot directly using TCP commands and send it scripts, nobody expects you to go through 600 pages of documentation and cryptic error messages. This server, along with the software on the robot's controller, implmenets a simple plain text-based protocol, and added some extra features that normally would require a PLC.
 
-### * That Velmex thing
+### That Velmex thing
 
 ...will be added when it's finally here.
