@@ -1,22 +1,14 @@
-function volciclab_robot_freedrive(robot_config_struct,on_or_off)
+function volciclab_robot_freedrive(on_or_off)
 %VOLCICLAB_ROBOT_FREEDRIVE Switches the robot's freedrive mode on or off.
+% This moves the robot's end to the desired position
 %   Input arugments are:
-%   -robot_config_struct, which tells how the robot is connected.
 %   -on_or_off, which could be a boolean, a number, or a string:
 %       true, 1, 'ON', 'On', 'on' turns on freedrive mode
 %       literally anything else turns it off
-
+   
     %% Sanity check.
-    if(~isstruct(robot_config_struct))
-        if(~exist('robot_config_struct.ip_address', 'var') && ...
-           ~exist('robot_config_struct.port', 'var') && ...
-           ~exist('robot_config_struct.udp_object', 'var') ...
-           )
-            error('The robot config structure must be properly initialised.')
-        end
-        error('The robot_config_struct must be a pre-defined structure.')
-    end
-
+    % Nothing needed.
+    volciclab_robot_config; % Load the structure.
     %% Do the work
     if(ischar(on_or_off))
         % String?
@@ -35,11 +27,11 @@ function volciclab_robot_freedrive(robot_config_struct,on_or_off)
         else
             % Turn off freedrive mode.
             string_to_send = 'freedrive;Off';
-
+        
         end
     end
-
+    
     % Send the packet
-    write(robot_config_struct.udp_object, string_to_send, robot_config_struct.ip_address, robot_config_struct.port)
+    write(volciclab_robot_config_struct.udp_object, string_to_send, volciclab_robot_config_struct.ip_address, volciclab_robot_config_struct.port)
 end
 

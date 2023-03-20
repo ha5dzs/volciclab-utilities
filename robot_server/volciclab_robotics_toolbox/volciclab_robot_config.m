@@ -8,6 +8,7 @@ volciclab_robot_config_struct.udp_timeout = 0.1; % In seconds.
 % for the incoming buffer as well.
 volciclab_robot_config_struct.udp_object = udpport("IPV4", "Timeout", volciclab_robot_config_struct.udp_timeout);
 
+%% AT THE VERY LEAST, CHECK IF EVERYTHING IS FINE HERE!!!!
 
 % How to connect to the robot server?
 volciclab_robot_config_struct.ip_address = '127.0.0.1';

@@ -1,29 +1,19 @@
-function robot_busy = volciclab_robot_is_busy(robot_config_struct)
+function robot_busy = volciclab_robot_is_busy()
 %VOLCICLAB_IS_ROBOT_BUSY 
 %   This function returns true if the robot is busy, and false if the robot
 %   is not busy.
-% Input argument:
-%   -robot_config_struct, which has the connection details.
+%   No input arguments required.
 % Returns:
 %   -True if the robot is busy, false is when the robot is not busy.
 
      %% Sanity checks.
-    if(~isstruct(robot_config_struct))
-        if(~exist('robot_config_struct.ip_address', 'var') && ...
-           ~exist('robot_config_struct.port', 'var') && ...
-           ~exist('robot_config_struct.udp_object', 'var') ...
-           )
-            error('The robot config structure must be properly initialised.')
-        end
-        error('The robot_config_struct must be a pre-defined structure.')
-    end
-
+    volciclab_robot_config;
     %% Do the work
-    write(robot_config_struct.udp_object, 'Is the robot busy?', robot_config_struct.ip_address, robot_config_struct.port);
+    write(volciclab_robot_config_struct.udp_object, 'Is the robot busy?', volciclab_robot_config_struct.ip_address, volciclab_robot_config_struct.port);
     % Wait for the reply
-    pause(robot_config_struct.udp_timeout)
+    pause(volciclab_robot_config_struct.udp_timeout)
     % Get the reply
-    reply_string = read(robot_config_struct.udp_object, robot_config_struct.udp_object.NumBytesAvailable, 'string');
+    reply_string = read(volciclab_robot_config_struct.udp_object, volciclab_robot_config_struct.udp_object.NumBytesAvailable, 'string');
     
     if(strcmp(reply_string, 'The robot is busy.'))
         robot_busy = true;

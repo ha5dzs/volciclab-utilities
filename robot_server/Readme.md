@@ -3,9 +3,13 @@
 ***
 
 **WARNING:**
+
 **This is RESEARCH SOFTWARE which is intended to be run in experiments situated in a controlled and isolated lab environment.**
+
 **It is not intended for production use.**
+
 **This implementation allows LITERALLY ANYONE WITH NETWORK ACCESS to control the robot.**
+
 **Use with caution, understand what are you doing. Stay safe.**
 
 ***
@@ -14,13 +18,13 @@
 
 A **teach pendant** is a robot controller human interface. You can change the robot's  **installation** settings, you can load a **program** and execute it, and you can also change **safety settings**, by adding a plane below which the robot can't move for example. You can also specify the maximum speed and acceleration of the robot, and if supported, configure the attachments too.
 
-The **tool contact point** is at the end of the robot. It is important that both the dimensions and the weight of the tool is specified correctly, because the robot monitors the force on the tool. If the robot detects that an unusually high force is required or measured on the tool, it will do a **protective stop**. In this narrative the **tool** is whatever device that gets attached to the robot. In manufacturing, where robots are mostly common, the tool can be screwdriver, a welding pistol or indeed a flamethrower. In the lab, it can be whatever 3D printed contraption that is required by the experiment.
+The **tool contact point** is at the end of the robot. It is important that both the dimensions and the weight of the tool is specified correctly, because the robot monitors the force on the tool. If the robot detects that an unusually high force is required or measured on the tool, it will do a **protective stop**. In this narrative the **tool** is whatever device that gets attached to the robot. In manufacturing, where robots are mostly common, the tool can be screwdriver, a welding torch or indeed a flamethrower when excitement is required. In the lab, it can be whatever 3D printed contraption that is required for the experiment.
 
-The robot has three **joints**, the shoulder that is closest to the base, the elbow, and the wrist that is closest to the tool. The robot's **pose** is a configuration of the angles of these joints, that will determine the position and orientation of the tool contact point (or 'tcp' all lowercase, which is not to be confused with the network protocol 'TCP', all in capitals).
+The robot has six **joints**, the shoulder that is closest to the base, the elbow, and the three wrist joints are the ones that are closest to the tool. Every joint, except 'Wrist 3' has limits, so these joints cannot do multiple revolutions. The robot's **pose** is a configuration of the angles of these joints, that will determine the position and orientation of the tool contact point (or 'tcp' all lowercase, which is not to be confused with the network protocol 'TCP', all in capitals).
 
 **Forward kinematics** is the process of calculating the position and orientation of the tool contact point from the joint angles, and conversely, **inverse kinematics** is the process of calculating the required joint angles for a given tool contact point position and orientation.
 
-**Freedrive** gives the impression of the robot joints not being controlled by the controller, so the robot can be moved manually. In this mode, you can touch the robot, and you can set into whatever pose the joints allow. If the robot starts to quickly fall in this mode and ends in propective stop, then adjust the weight of the tool in your tool definition.
+**Freedrive** gives the impression of the robot joints not being controlled by the controller, so the robot can be moved manually. In this mode, you can touch the robot, and you can set into whatever pose the joints allow. This is just an illusion, because the robot is actually costantly applying force on the joints and disengaged the brakes. The robot starts to fall or jerk upwards quickly when the expected payload (the tool and whatever the tool holds) are not what is set within its settings. If this happens, the robot will do a propective stop, and you need to then adjust the weight of the tool in your tool definition.
 ***
 In the Volciclab implementation, the **teaching** of the robot is the process of switching into freedrive, moving the robot to the required pose and recording the pose string that is displayed on the server. Then, in the Matlab code, you can call these poses in sequence.
 ***
@@ -30,7 +34,8 @@ This system has three components:
 
 * The [URScript](#the-urscript-code-running-on-the-robots-controller) code that is running the robot's controller
 * [The Server](#the-server), written in Python
-* [The Matlab code](#the-matlab-code-volciclab-robotics-toolbox), that runs on the experimental computer.
+* [The Matlab code](#the-matlab-code-volciclab-robotics-toolbox), included here to drive the robot and runs on your computer
+* Your code, which also runs on your computer.
 
 In order to get started, you need to be familiar with the lab network, so you would know the IP addresses concerned. Then, if required, edit the URScript on the teach pendant, and possibly you need to edit the server's config file too.
 
@@ -116,7 +121,88 @@ This is implemented with a lot of string comparison statements. You can add your
          textmsg("Freedrive mode is off.")
 ```
 
-You can see that URScript treats strings in a case sensitive manner.
+### IMPORTANT: The robot program's file format is not obvious, do not edit mantually!
+
+Here is why:
+
+Let's say that we have an awesome world-changing robot program, which we name `skynet`. On the teach pendant, this is shown as a single file, but in reality ther are at least three. These are
+
+* `skynet.txt`, which is the URSCript you created on the teach pendant. This is not the actual code that runs on the robot, and changing this does nothing.
+
+You can see that URScript treats strings in a case sensitive manner. You can forget about nicely typing up the code on the teach pendant. You must click each and every statement, and use the on-screen keyboard. You can also use a USB keyboard, but the layout will be Danish. It cannot be changed from the interface.
+
+* `skynet.script`, which has some added information, including some hardware set-up, and peripherals such as a vacuum-based gripper and MODBUS interface. Much for the ego of the developers, they defined the units in metres, and apparently they operate at femtometer precision:
+
+```URScript
+ global My_laptop=p[0.37210999999999994,-0.5543799999999999,0.17111,-0.24416661269018833,-1.7487795435078342,1.416471282499612]
+
+```
+
+Changing this also does nothing, it's for your information only.
+
+* `skynet.urp` is the file where things actually happen.
+This is actually a zip file, where by the Infinite Wisdom of Universal Robots, they created an XML-based document, where they encoded each and every character in the script as a separate node. So your code kind of reads vertically.
+
+So these two lines
+
+```Urscript
+'Global variables for telling the robot what to do. One instruction at a time.'
+server_ip := "192.168.42.65"
+opcide := "nothing"
+```
+
+become this:
+
+```URScript
+  <children>
+    <MainProgram runOnlyOnce="false" InitVariablesNode="false">
+      <children>
+        <Comment comment="Global variables for telling the robot what to do. One instruction at a time."/>
+        <Assignment valueSource="Expression">
+          <variable name="server_ip" prefersPersistentValue="false">
+            <initializeExpression/>
+          </variable>
+          <expression>
+            <ExpressionChar character="&quot;"/>
+            <ExpressionChar character="1"/>
+            <ExpressionChar character="9"/>
+            <ExpressionChar character="2"/>
+            <ExpressionChar character="."/>
+            <ExpressionChar character="1"/>
+            <ExpressionChar character="6"/>
+            <ExpressionChar character="8"/>
+            <ExpressionChar character="."/>
+            <ExpressionChar character="4"/>
+            <ExpressionChar character="2"/>
+            <ExpressionChar character="."/>
+            <ExpressionChar character="6"/>
+            <ExpressionChar character="5"/>
+            <ExpressionChar character="&quot;"/>
+          </expression>
+        </Assignment>
+        <Assignment valueSource="Expression">
+          <variable name="opcode" prefersPersistentValue="false">
+            <initializeExpression/>
+          </variable>
+          <expression>
+            <ExpressionChar character="&quot;"/>
+            <ExpressionChar character="n"/>
+            <ExpressionChar character="o"/>
+            <ExpressionChar character="t"/>
+            <ExpressionChar character="h"/>
+            <ExpressionChar character="i"/>
+            <ExpressionChar character="n"/>
+            <ExpressionChar character="g"/>
+            <ExpressionChar character="&quot;"/>
+          </expression>
+        </Assignment>
+```
+
+So unless you are prepared to create a trainwreck code like this, your 'easiest' option is to use the teach pendant. The interface there is made in Java. It can crash, and it will crash when it's most inconvenient. So save and backup regularly.
+
+And from here, I congratulate the Great Engineers of Universal Robots, whom, they ~~created~~ dreamt up this wonderful interface with its straightforward code, with the exception that this little robot's price tag is so hefty that one could buy two new cars with it.
+
+Egon Olsen would approve.
 
 ## The currently implemented available robot commands are:
 
@@ -155,7 +241,19 @@ This updated the tool contact point definition with respect to the tool socket o
 p[X, Y, Z, Rx, Ry, Rz]
 ```
 
-the `p[` bit is required for the URScript to process the pose. This is sent directly to the server from your Matlab code as a string. The triplet of `X`, `Y` and `Z` are cartesian coordinates, with respect of the base of the robot. The `Rx`, `Ry` and `Rz` bits are Euler angles, in radians.
+the `p[` bit is required for the URScript to process the pose. This is sent directly to the server from your Matlab code as a string. The triplet of `X`, `Y` and `Z` are cartesian coordinates, with respect of the base of the robot. The `Rx`, `Ry` and `Rz` bits are rotation Euler angles, in radians.
+
+### **`move_from_via_to`**. The robot will report as busy while executing
+
+This is basically a 'pick and place' feature with the Robotiq gripper.
+
+There are three poses to be specified here, but there are five waypoints. The input arguments are the `start_pose`, the `via_pose`, and the `end_pose`. Additionally, this part of the program creates the `start_pose_elev` and `end_pose_elev`, which are 30 mm above `start_pose` and `end_pose`, respectively.
+Execution is as follows: the robot approaches the `start_pose_elev`. It opens the grip to the specified size, then it descends to `start_pose`, after which it will engage the grip. Following that, hopefully with a sucessful grip (not checked by the code!) the robot will go back to `start_pose_elev`, then will travel to `end_pose_elev`, following a curved path that includes `via_pose`. Having arrived to `end_pose_elev`, it descends to `end_pose`, disengages the grip, and goes back to the `end_pose_elev`.
+
+
+### **`move_tcp_rpy`**. The robot will report as busy while executing
+
+This code is essentially the same as `move_tcp`, but it uses more experimenter-friendly Euler angles for the tool contact point, rather than its own internal rotation angles. Since the order of the rotations matter hugely in Euler-angles, the necessary formatting is done in the corresponding Matlab function, see below.
 
 ## The server
 
@@ -168,7 +266,7 @@ Everything is implemented from core python libraries. [ConfigParser](https://doc
 There are three threads, these are executing concurrently:
 
 * **The TCP server.**
-While the actual creation of the TCP socket is easy, specific measures needed to be taken for timeouts. Also, the robot sometimes closes the connection, and dedicated timeouts had to be introduced, hence the nested `try:` and `except:` statements. The contents of the packets are analysed using Python's string functions.
+While the actual creation of the TCP socket is easy, specific measures needed to be taken for timeouts. Since the robot sometimes rudely close the connection dedicated timeouts had to be introduced, hence the nested `try:` and `except:` statements. The contents of the packets are analysed using Python's string functions.
 
 * **The UDP server.**
 This implementation is fairly straightforward: the socket is created, and the contents are analysed. Some messages require responses, which is implemented here.
@@ -177,6 +275,8 @@ This implementation is fairly straightforward: the socket is created, and the co
 This should be done in the main thread, but it didn't work. For the data strings that require live updates, the latest information is fetched here. For the log strings, which are ever-increasing, special measures needed to be taken to find what is the latest line. Also, if the user decides to delete the log, a diagnostic message is added here.
 
 The main thread draws the GUI and handles user-induced events such as mouse clicks, dialogue boxes and prompts.
+
+Performance-wise it is not the greatest, but it allows the experimenter to control the robot with a couple of lines of code, and concentrate on other, more important things.
 
 #### Inter-thread communication
 
@@ -237,7 +337,7 @@ This window has several sections. When the server starts up, you can see that th
 
 ![The main window](img/start_window.png)
 
-Once the robot is connected, the server's main window work as a glorified status display and data logger. It shows instructions on how to connect the robot, how you should set your code, and what is the current pose of the robot. There are right click menus where you can save the log or copy the current pose as a string. You can directly paste this to Matlab.
+Once the robot is connected, the server's main window work as a glorified status display and data logger. It shows instructions on how to connect the robot, how you should set your code, and what is the current pose of the robot. **There are right click menus where you can save the log or copy the current pose as a string. You can directly paste this to Matlab.**
 
 ![The main window, explained](img/connected_window_explained.png)
 
@@ -309,7 +409,7 @@ These are convenience scripts and wrapper functions. They have error management 
 
 #### **`volciclab_robot_config.m`**
 
-For easier access to fine-tuning network settings, the network-specific configuration is assembled into a single structure. This structure is the `volciclab_robot_config_struct`, and is used as the first argument for every function listed here.
+For easier access to fine-tuning network settings, every function calls this script. This is where the connection-specific things are set.
 It is initialised as follows:
 
 ```Matlab
@@ -332,12 +432,11 @@ volciclab_robot_config_struct.port = 2501;
 
 ***
 
-#### **`volciclab_robot_freedrive(robot_config_struct,on_or_off)`**
+#### **`volciclab_robot_freedrive(on_or_off)`**
 This function switches the robot's freedrive mode on or off.
 
 ```Matlab
-%   Input arugments are:
-%   -robot_config_struct, which tells how the robot is connected.
+%   Input arugment:
 %   -on_or_off, which could be a boolean, a number, or a string:
 %       true, 1, 'ON', 'On', 'on' turns on freedrive mode
 %       literally anything else turns it off
@@ -347,13 +446,14 @@ There is no return value. Check the server window whether it worked or not.
 
 ***
 
-#### **`robot_force_in_newtons = volciclab_robot_get_force(robot_config_struct)`**
+#### **`robot_force_in_newtons = volciclab_robot_get_force()`**
 
 This function gets the current force applied to the robot's tool in Newtons.
 
-```MAtlab
-%   Input argument is:
-%   -robot_config_struct, which has the connection details.
+**IMPORTANT: The force transducer on the robot drifts. If force measurements are required, use relative values!**
+
+```Matlab
+%   No input argument required.
 %   Returns:
 %   -If the robot is connected and getting data, then the appropriate force
 %   is returned.
@@ -362,55 +462,66 @@ This function gets the current force applied to the robot's tool in Newtons.
 
 ***
 
-#### **`reply_string = volciclab_robot_get_status(robot_config_struct)`**
+#### **`reply_string = volciclab_robot_get_status()`**
 
-This function gets the latest robot status string.
+This function gets the latest robot status string from the server
 
 ```Matlab
 %   I don't think I need to explain this any further, but this is the same
 %   string you see in the top left corner of the server window. There you
 %   have it! :D
-%   Input argument is:
-%   -robot_config_struct, which has the connection details.
+%   No input argument required.
 %   Returns:
 %   ...a string with the robot status in it.
 ```
 
 ***
 
-#### **`robot_busy = volciclab_robot_is_busy(robot_config_struct)`**
+#### **`robot_busy = volciclab_robot_is_busy()`**
 
 This function returns true if the robot is busy, and false if the robot is not busy.
 
 ```Matlab
-% Input argument:
-%   -robot_config_struct, which has the connection details.
+% No input argument required.
 % Returns:
 %   -True if the robot is busy, false is when the robot is not busy.
 ```
 
 ***
 
-#### **`robot_connected = volciclab_robot_is_connected(robot_config_struct)`**
+#### **`robot_connected = volciclab_robot_is_connected())`**
 
 This function checks if the robot is connected to the server.
 
 ```Matlab
-% Input argument:
-%   -robot_config_struct, which has the connection details.
+% No input argument required.
 % Returns:
 %   -True if the robot is connected, false is when the robot is not connected.
 ```
 
 ***
 
-#### **`volciclab_robot_move_tcp(robot_config_struct, new_pose)`**
+#### **`volciclab_robot_move_from_via_to(start_pose, via_pose, end_pose, open_grip_size)`**
+
+This function picks up an object from `start_pose`, and takes it to `end_pose` via the `via_pose`.
+
+```Matlab
+%   Input arguments are:
+%       -start_pose, [X,Y,Z,Rx,Ry,Rz]
+%       -via_pose, [X,Y,Z,Rx,Ry,Rz]
+%       -end_pose, [X,Y,Z,Rx,Ry,Rz]
+%       -open_grip_size, which is a number
+%        between 0 (totally open) and 100 (totally closed)
+```
+
+***
+
+#### **`volciclab_robot_move_tcp(new_pose)`**
 
 This function instructs the robot to move the tool contact point, so this moves the robot's end to the desired position. The pose must be reachable and within safety limits.
 
 ```Matlab
 %   Input arugments are:
-%   -robot_config_struct, which tells how the robot is connected.
 %   -new_pose, which is a vector with 6 values. These are:
 %           -X, Y, Z, which is the tool contact point's coordinates
 %           -Rx, Ry, Rz, which is the tool contact point's rotation IN RADIANS!
@@ -420,13 +531,30 @@ This function instructs the robot to move the tool contact point, so this moves 
 
 ***
 
-#### **`volciclab_robot_set_gripper(robot_config_struct, new_gripper_value)`**
+#### **`volciclab_robot_move_tcp_rpy(new_pose)`**
+
+This function instructs the robot to move the tool contact point.
+
+**IMPORTANT: For internal use, the rotation order is changed to make sure they are compatible with other systems!**
+
+```Matlab
+%   Input arugments are:
+%   -new_pose, which is a vector with 6 values. These are:
+%           -X, Y, Z, which is the tool contact point's coordinates
+%           -R, P, Y, which is the tool contact point's rotation in roll-pitch-yaw, and in radians
+%   There are no return values, you should see either the robot move, or
+%   the instruction being stored on the server.
+```
+
+
+***
+
+#### **`volciclab_robot_set_gripper(new_gripper_value)`**
 
 This function sets the gripper on the robot. The gripper must be mounted, connected, and the correct robot program must be loaded before this function can be called.
 
 ```Matlab
-%   Input arugments are:
-%   -robot_config_struct, which tells how the robot is connected.
+%   Input arugment:
 %   -new_gripper_value, which is a number between 0 and 100.
 ```
 
