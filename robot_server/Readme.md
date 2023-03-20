@@ -2,7 +2,7 @@
 
 ***
 
-**$${\color{red} $WARNING: This is RESEARCH SOFTWARE which is intended to be run in experiments situated in a controlled and isolated lab environment. It is not intended for production use. This implementation allows LITERALLY ANYONE WITH NETWORK ACCESS to control the robot. Use with caution, understand what are you doing. Safety is paramount!}$$**
+**${\color{red} $WARNING: This is RESEARCH SOFTWARE which is intended to be run in experiments situated in a controlled and isolated lab environment. It is not intended for production use. This implementation allows LITERALLY ANYONE WITH NETWORK ACCESS to control the robot. Use with caution, understand what are you doing. Safety is paramount!}$**
 
 ***
 
