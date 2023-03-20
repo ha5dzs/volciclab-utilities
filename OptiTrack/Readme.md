@@ -102,8 +102,8 @@ You can also get a multiple rigid bodies, in any order with:
 
 Return values are:
 `framecounter`, `timestamp`, these are single numbers, one specified the number of frames, the other specifies the time elapsed since data acquisition began
-`translation` is an n-by-3 array, for n number of rigid bodies. They are X-Y-Z triplets. As per the streaming settings in Motive, Z is upwards.
-`quaternion` is an n-by-4 array, for n number of rigid bodies. This is the rotation data for each rigid body, in quaternion format.
+`translation` is an n-by-3 array, for n number of rigid bodies. They are X-Y-Z triplets. As per the streaming settings in Motive, Z is upward, and units are in metres.
+`quaternion` is an n-by-4 array, for n number of rigid bodies. This is the rotation data for each rigid body, in quaternion (`W-X-Y-Z` or `w-i-j-k`) format.
 ***
 
 ### `volciclab_optitrack_start_recording(natnet_object, take_name)`
