@@ -12,7 +12,7 @@
 
 **Use with caution. Understand what you are doing. Stay safe.**
 
-The robot uprising hasn't happened yet, so this robot can't think for you.
+While there was considerable progress in AI, the robot uprising hasn't happened yet. This robot can't think for you, and will execute any instruction no matter how idiotic or destructive it is.
 
 ***
 
@@ -30,6 +30,9 @@ The robot has six **joints**, the shoulder that is closest to the base, the elbo
 ***
 In the Volciclab implementation, the **teaching** of the robot is the process of switching into freedrive, moving the robot to the required pose and recording the pose string that is displayed on the server. Then, in the Matlab code, you can call these poses in sequence.
 ***
+
+IMPORTANT: The built-in kinematic algorithms in the URScript ignore joint limits and the robot's main body itself. So **it is totally possible that the robot will crash into itself** or protectively stop when a joint limit is reached. In this case, restart the robot, set it to freedrive, and adjust the joints so such a crash won't occur. Following a safety violation, the robot will operate with lower velocities and accelerations, so you may need to restart it completely.
+
 ## How the robot is controlled with this implementation
 
 This system has three components:
@@ -129,7 +132,7 @@ Here is why:
 
 Let's say that we have an awesome world-changing robot program, which we name `skynet`. On the teach pendant, this is shown as a single file, but in reality ther are at least three. These are
 
-* `skynet.txt`, which is the URSCript you created on the teach pendant. This is not the actual code that runs on the robot, and changing this does nothing.
+* `skynet.txt`, which is the URScript you created on the teach pendant. This is not the actual code that runs on the robot, and changing this does nothing.
 
 You can see that URScript treats strings in a case sensitive manner. You can forget about nicely typing up the code on the teach pendant. You must click each and every statement, and use the on-screen keyboard. You can also use a USB keyboard, but the layout will be Danish. It cannot be changed from the interface.
 
@@ -142,15 +145,15 @@ You can see that URScript treats strings in a case sensitive manner. You can for
 
 Changing this also does nothing, it's for your information only.
 
-* `skynet.urp` is the file where things actually happen.
-This is actually a zip file, where by the Infinite Wisdom of Universal Robots, they created an XML-based document, where they encoded each and every character in the script as a separate node. So your code kind of reads vertically.
+* `skynet.urp` is the file where things happen.
+This is actually a zip file with an overwritten extension, where by the Infinite Wisdom of Universal Robots, they created an XML-based document, where they encoded each and every character in the script as a separate node. So your code kind of reads vertically.
 
 So these two lines
 
 ```Urscript
 'Global variables for telling the robot what to do. One instruction at a time.'
-server_ip := "192.168.42.65"
-opcide := "nothing"
+server_ip ≔ "192.168.42.65"
+opcide ≔ "nothing"
 ```
 
 become this:
@@ -252,6 +255,41 @@ This is basically a 'pick and place' feature with the Robotiq gripper.
 There are three poses to be specified here, but there are five waypoints. The input arguments are the `start_pose`, the `via_pose`, and the `end_pose`. Additionally, this part of the program creates the `start_pose_elev` and `end_pose_elev`, which are 30 mm above `start_pose` and `end_pose`, respectively.
 Execution is as follows: the robot approaches the `start_pose_elev`. It opens the grip to the specified size, then it descends to `start_pose`, after which it will engage the grip. Following that, hopefully with a sucessful grip (not checked by the code!) the robot will go back to `start_pose_elev`, then will travel to `end_pose_elev`, following a curved path that includes `via_pose`. Having arrived to `end_pose_elev`, it descends to `end_pose`, disengages the grip, and goes back to the `end_pose_elev`.
 
+See the relevant bit of code, and [how this part is called from Matlab](#volciclab_robot_move_from_via_tostart_pose-via_pose-end_pose-open_grip_size).
+
+```URScript
+If (opcode ≟"move_from_via_to")  and (freedrive ≟ False )
+       'the big one!'
+       socket_send_string("Please send argument.")
+       long_argument≔socket_read_ascii_float(19)
+       If long_argument[0] ≠ 19
+         socket_send_string("Invalid argument received for move_from_to!")
+         Popup: the length of argument for move_from_to wasn't 19.
+       'This elevation tells the robot how much to hover above.'
+       elevation≔0.03
+       start_pose≔p[long_argument[1], long_argument[2], long_argument[3], long_argument[4], long_argument[5], long_argument[6]]
+       start_pose_elev≔p[long_argument[1], long_argument[2], long_argument[3] + elevation, long_argument[4], long_argument[5], long_argument[6]]
+       via_pose≔p[long_argument[7], long_argument[8], long_argument[9], long_argument[10], long_argument[11], long_argument[12]]
+       end_pose≔p[long_argument[13], long_argument[14], long_argument[15], long_argument[16], long_argument[17], long_argument[18]]
+       end_pose_elev≔p[long_argument[13], long_argument[14], long_argument[15] + elevation, long_argument[16], long_argument[17], long_argument[18]]
+       open_grip_size≔long_argument[19]
+       socket_send_string("I am busy.")
+       'now we are ready to move the robot.'
+       rq_move_norm(open_grip_size)
+       movej(start_pose_elev)
+       movej(start_pose)
+       rq_move_and_wait_norm(100)
+       movej(start_pose_elev)
+       movec(via_pose, end_pose_elev)
+       movej(end_pose)
+       rq_move_and_wait_norm(open_grip_size)
+       movej(end_pose_elev)
+       rq_move_norm(open_grip_size)
+       rq_move_and_wait_norm(100)
+       socket_send_string("I'm not busy.")
+
+```
+
 
 ### **`move_tcp_rpy`**. The robot will report as busy while executing
 
@@ -268,17 +306,20 @@ Everything is implemented from core python libraries. [ConfigParser](https://doc
 There are three threads, these are executing concurrently:
 
 * **The TCP server.**
+
 While the actual creation of the TCP socket is easy, specific measures needed to be taken for timeouts. Since the robot sometimes rudely close the connection dedicated timeouts had to be introduced, hence the nested `try:` and `except:` statements. The contents of the packets are analysed using Python's string functions.
 
 * **The UDP server.**
+
 This implementation is fairly straightforward: the socket is created, and the contents are analysed. Some messages require responses, which is implemented here.
 
 * **The GUI refresher.**
+
 This should be done in the main thread, but it didn't work. For the data strings that require live updates, the latest information is fetched here. For the log strings, which are ever-increasing, special measures needed to be taken to find what is the latest line. Also, if the user decides to delete the log, a diagnostic message is added here.
 
 The main thread draws the GUI and handles user-induced events such as mouse clicks, dialogue boxes and prompts.
 
-Performance-wise it is not the greatest, but it allows the experimenter to control the robot with a couple of lines of code, and concentrate on other, more important things.
+Performance-wise it is not the greatest, but it allows the experimenter to control the robot with a couple of lines of code, and concentrate on other, more important things. If you need better performance (i.e. to reduce the idle time between moves), consider adding your custom sequence to the robot program. See [above](#move_tcp_rpy-the-robot-will-report-as-busy-while-executing) how you can do this.
 
 #### Inter-thread communication
 
@@ -345,7 +386,7 @@ Once the robot is connected, the server's main window work as a glorified status
 
 * **The top left corner:**
 There are three lines here: The first line is the robot status. You can access this string directly from Matlab.
-The second line is the robot's current pose expressed as the tool contact point. This is in the X, Z, Z, Rx, Ry, Rz format: X, Y, Z are cartesian coordinates with respect to the base the robot, and Rx, Rx, Rz are the Euler angles in radians. You can also access this directly from Matlab too.
+The second line is the robot's current pose expressed as the tool contact point. This is in the X, Y, Z, Rx, Ry, Rz format: X, Y, Z are cartesian coordinates with respect to the base the robot, and Rx, Rx, Rz are the Euler angles in radians. You can also access this directly from Matlab too.
 The third line is the current force measured on the wrist joint of the robot, after compensating for the tool's weight itself, again, accessible from Matlab as well. The unit is Newton.
 
 * **The top right corner:**
@@ -405,9 +446,9 @@ response = read(udp_object, udp_object.NumBytesAvailable, 'string');
 
 ### Script and function listings
 
-These are convenience scripts and wrapper functions. They have error management and some script analysis.
+These are convenience scripts and wrapper functions. They have some sanity checks and error management.
 
----
+***
 
 #### **`volciclab_robot_config.m`**
 
