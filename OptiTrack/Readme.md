@@ -121,7 +121,7 @@ Recording stops immediately* (*allowing a few milliseconds for network and proce
 This function gracefully terminates connection to the Motive server. This, however, does not stop Motive itself.`natnet_object` is the object you created using `volciclab_optitrack_init()`.
 ***
 
-### `volciclab_optitrack_get_take(tak_file_path, csv_file_path)`
+### `volciclab_optitrack_get_take(tak_file_path, csv_file_path, <optional: rotation_format>)`
 
 This function calls the _.tak to .csv converter_ to create an easily readable csv file from the proprietary and binary .tak files. Then it reads the .csv file, and returns the rigid body data. **Always use absolute paths** with this function. Also, since this function uses an external executable, its path must be updated. Since we are using it in a sealed environment with a number of fixed-IP computers, we can link the executable statically.
 
