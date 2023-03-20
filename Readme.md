@@ -40,10 +40,10 @@ This is the legacy motion tracker. It's no longer sold by the manufacturer, most
 
 This one is the fancy new one with the copious number of cameras. There is a simple matlab interface available, and is much easier to use than the Optotrak.
 
-### [Robot server](robot_server/readme.md)
+### [Robot server](robot_server/Readme.md)
 
 While you can control the robot directly using TCP commands and send it scripts, nobody expects you to go through 600 pages of documentation and cryptic error messages. This server, along with the software on the robot's controller, implmenets a simple plain text-based protocol, and added some extra features that normally would require a PLC.
 
-### That Velmex thing
+### [That Velmex thing](velmex/Readme.md)
 
 ...will be added when it's finally here.
