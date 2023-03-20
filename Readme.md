@@ -12,7 +12,7 @@ All the local networks inside the lab are isolated from the outside world by def
 
 ### Blue cables: The [OptiTrack](OptiTrack/Readme.md) camera network
 
-The [OptiTrack](OptiTrack/Readme.md) cameras are connected to the Netgear PoE (Power over Ethernet) switch. While these are sitting on the network, they don't actually care about a DHCP server at all. They just assume various addresses, seemingly in bootup order or serial number order. They will cause an IP address conflict if the DHCP range is within the camera addresses. To counteract this, the router is configured to have a DHCP range from `192.168.69.101` to `192.168.69.199`.
+The [OptiTrack](OptiTrack/Readme.md) cameras are connected to the Netgear PoE ([Power over Ethernet](https://en.wikipedia.org/wiki/Power_over_Ethernet)) switch. While these are sitting on the network, they don't actually care about a DHCP server at all. They just assume various addresses, seemingly in bootup order or serial number order. They will cause an IP address conflict if the DHCP range is within the camera addresses. To counteract this, the router is configured to have a DHCP range from `192.168.69.101` to `192.168.69.199`.
 
 Note that the OptiTrack computer that runs Motive is connected to this network via a deicated PCI-E network adapter.
 
@@ -23,12 +23,16 @@ If you have an own device or anything that doesn't upport IEEE 802.1X, you can c
 * The Optotrak SCUs: `192.168.42.2` (on the truss), and `192.168.42.3` on the desk, but can be portable
 * The OptiTrack computer, `192.168.42.5`. This one has a Samba share, so you can download and store your recordings (You should also make backups as well. No data should ever be lost!)
 * The **Ethernet 1 port, as labelled on the back, not as per Windows of the experimental computers**: `192.168.42.6` and `192.168.42.7`
-* The [Universal Robots UR3e robotic arm](robot_server/readme.md), which is on `192.168.42.10`
+* The [Universal Robots UR3e robotic arm](robot_server/Readme.md), which is on `192.168.42.10`
 * Everything else (3D printer, your gadgets, IoT stuff) can be on DCHP, and will have an IP address from `192.168.42.35` onwards.
 
 ### Gray cables: NYUAD uplink
 
-For the purpose of software development and firmware upgrades, the Volciclab network can also be connected to the NYUAD network. The Ethernet 2 port (as labelled on the back, and not as per Windows) is permanently connected to the NYUAD network.
+For the purpose of software development and firmware upgrades, the Volciclab network can also be connected to the NYUAD network. The Ethernet 2 port (as labelled on the back, and not necessarily as per Windows) is permanently connected to the NYUAD network.
+
+#### A note on networks
+
+Since there are disjoint networks, and some of the hosts are on fixed IP while others on DHCP, packet routing can be an issue. For example, when a request is sent to the robot, but the OS routes it to an other network, the connection cannot be made. For this reason, on Windows, the interfaces are prioritised: the interface metrics are not assigned automatically, they are manually set.
 
 ## Hardware (links to the appropriate sites)
 
