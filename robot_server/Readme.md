@@ -10,7 +10,7 @@
 
 **This implementation allows LITERALLY ANYONE WITH NETWORK ACCESS to control the robot.**
 
-**Use with caution. Understand what are you doing. Stay safe.**
+**Use with caution. Understand what you are doing. Stay safe.**
 
 The robot uprising hasn't happened yet, so this robot can't think for you.
 
