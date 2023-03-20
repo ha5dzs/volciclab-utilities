@@ -44,6 +44,6 @@ This one is the fancy new one with the copious number of cameras. There is a sim
 
 While you can control the robot directly using TCP commands and send it scripts, nobody expects you to go through 600 pages of documentation and cryptic error messages. This server, along with the software on the robot's controller, implmenets a simple plain text-based protocol, and added some extra features that normally would require a PLC.
 
-### [That Velmex thing](velmex/Readme.md)
+### [That Velmex thing](Velmex/Readme.md)
 
 ...will be added when it's finally here.
