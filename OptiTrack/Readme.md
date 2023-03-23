@@ -123,15 +123,28 @@ This function gracefully terminates connection to the Motive server. This, howev
 
 ### `volciclab_optitrack_get_take(tak_file_path, csv_file_path, <optional: rotation_format>)`
 
-This function calls the _.tak to .csv converter_ to create an easily readable csv file from the proprietary and binary .tak files. Then it reads the .csv file, and returns the rigid body data. **Always use absolute paths** with this function. Also, since this function uses an external executable, its path must be updated. Since we are using it in a sealed environment with a number of fixed-IP computers, we can link the executable statically.
+This function calls the _.tak to .csv converter_ to create an easily readable csv file from the proprietary and binary .tak files. Then it reads the .csv file, and returns the rigid body data to the Matlab environment the function is called from. The advantage is that you can call this from within Matlab, and you don't have to have a licence for Motive on your computer. This comes at a price of a performance overhead, so it will work slower than the [Batch processor](https://docs.optitrack.com/v/v2.3/motive/motive-batch-processor) or Motive itself.
+
+Besides the paths to the files, you can specify the `rotation_format` as well, which is as follows:
+
+- 0: Quaternion, `w-x-y-z` (`w-i-j-k`)
+- 1: Euler, `X-Y-Z`
+- 2: Euler, `X-Z-Y`
+- 3: Euler, `Y-X-Z`
+- 4: Euler, `Y-Z-X`
+- 5: Euler, `Z-X-Y`
+- 6: Euler, `Z-Y-X`
+
+
+If you don't specify this optional input argument, the rotation will be quaternion.
 
 This function returns `rigid_body_structure`, with the following fields:
 
 - framecounter, which is a sequence starting from 0.
 - time, in seconds, which tells you the time difference between subsequent frames
 - rigid_body(n), which is a structure array, for n rigid bodies you had in the recording. Its fields are:
-  - rigid_body(n).translation is a set of triplets of X-Y-Z coordinates for each frame. Units are in millimetres.
-  - rigid_body(n).rotation is a set of quad tuple of quaternion (q0, q1, q2, q3 or qx, qy, qz, qw) rotations
+  - rigid_body(n).translation is a set of triplets of X-Y-Z coordinates for each frame. **The units are in millimetres!**
+  - rigid_body(n).rotation is a set of quad tuple of quaternion rotations
   - rigid_body(n).tracking_error is the tracking error of the rigid body in each frame.
 **[IMPORTANT]:** The rigid body indexing is exactly the same as you would get with the NatNet SDK. Since the header of the .csv files generated is following a non-standard, Matlab has a hard time reading it. If in doubt, check the .csv file itself.
 
