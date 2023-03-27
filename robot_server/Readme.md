@@ -130,7 +130,7 @@ This is implemented with a lot of string comparison statements. You can add your
 
 Here is why:
 
-Let's say that we have an awesome world-changing robot program, which we name `skynet`. On the teach pendant, this is shown as a single file, but in reality ther are at least three. These are
+Let's say that we have an awesome world-changing robot program, which we name `skynet`. On the teach pendant, this is shown as a single file, but in reality there are at least three. These are
 
 * `skynet.txt`, which is the URScript you created on the teach pendant. This is not the actual code that runs on the robot, and changing this does nothing.
 
@@ -211,7 +211,9 @@ Egon Olsen would approve.
 
 ## The currently implemented available robot commands are:
 
-### **`move_tcp`**. The robot will report as busy while executing
+### **`move_tcp`**
+
+The robot will report as busy while executing.
 
 This is the most commonly used command. This moves the previously defined 'tool contact point' to the required position. In URScript, the 'pose' of the robot is stored as a vector of 6 floating-point numbers, in the following format:
 
@@ -228,15 +230,21 @@ This operation will fail if:
 * the robot crashes into anything, including itself
 * the coordinates are not formatted properly
 
-### **`freedrive`**. The robot will not report as busy while executing
+### **`freedrive`**
+
+The robot will not report as busy while executing.
 
 This sets the robot into freedrive mode. Only one argument is needed. `ON` or `OFF`. Note that the safety limits are still active, so if you move the robot too fast or into a limit, then it will do a protective stop.
 
-### **`set_gripper`**. The robot will report as busy while executing
+### **`set_gripper`**
+
+The robot will report as busy while executing.
 
 If the gripper attachment is connected and the correct program is loaded that actually handles the gripper, then this will open the gripper to the required position. 100 is fully closed, and 0 is fully open.
 
-### **`update_tcp`**. The robot will not report as busy while executing
+### **`update_tcp`**
+
+The robot will NOT report as busy while executing.
 
 If possible, please use the teach pendant to set this.
 
@@ -248,7 +256,9 @@ p[X, Y, Z, Rx, Ry, Rz]
 
 the `p[` bit is required for the URScript to process the pose. This is sent directly to the server from your Matlab code as a string. The triplet of `X`, `Y` and `Z` are cartesian coordinates, with respect of the base of the robot. The `Rx`, `Ry` and `Rz` bits are rotation Euler angles, in radians.
 
-### **`move_from_via_to`**. The robot will report as busy while executing
+### **`move_from_via_to`**
+
+The robot will report as busy while executing.
 
 This is basically a 'pick and place' feature with the Robotiq gripper.
 
@@ -291,9 +301,19 @@ If (opcode ≟"move_from_via_to")  and (freedrive ≟ False )
 ```
 
 
-### **`move_tcp_rpy`**. The robot will report as busy while executing
+### **`move_tcp_rpy`**
 
-This code is essentially the same as `move_tcp`, but it uses more experimenter-friendly Euler angles for the tool contact point, rather than its own internal rotation angles. Since the order of the rotations matter hugely in Euler-angles, the necessary formatting is done in the corresponding Matlab function, see below.
+The robot will report as busy while executing
+
+This code is essentially the same as `move_tcp`, but it uses more experimenter-friendly Euler angles for the tool contact point, rather than its own internal rotation angles. Since there is a mismatch in terminology for the rotation names, this is now set to be consistent for the axes across different systems. See below, for all Volciclab assets:
+
+|Rotated axis name and definition| OptiTrack name | Optotrak name | Robot name |
+|-----------------------|----------------|---------------|------------|
+| `X` (on table, from left to right)| Pitch (Clockwise+) | Yaw (Clockwise+) | Roll (Clockwise+) |
+| `Y` (on table, from the participant to the experimenter)| Yaw(Clockwise+) | Pitch(Clockwise-) | Pitch (Clockwise+) |
+| `Z` (from the plane of the table, upwards)| Roll (Clockwise+) | Roll(Clockwise+) | Yaw (Clocwise+) |
+
+Since this is confusing, everything is set so the triplets are always representing the `X -> Y' -> Z"` rotation and rotation order, irrespective of what the actual name is.
 
 ## The server
 
