@@ -8,8 +8,15 @@ clear all;
 clc;
 
 % Initialise the system:
-% Your IP address, and the session (experiment) name
-motion_tracker = volciclab_optitrack_init('192.168.42.154', 'test_experiment');
+
+experiment_name = 'test_experiment';
+path_to_your_session = 'Z:/wherever_your_stuff_is'; % On your network drive
+recording_name = 'trial001'; % You probably update this in the experimental loop
+
+
+% Your own (NOT the server's) IP address, and the session (experiment) name
+motion_tracker = volciclab_optitrack_init('192.168.42.154', experiment_name);
+
 
 % Check loaded rigid bodies. Motive is already set to Live mode, so we can access this.
 [no_of_rigid_bodies, rigid_body_ids, rigid_body_names] = volciclab_optitrack_get_rigid_body_info(motion_tracker);
@@ -25,7 +32,7 @@ translation(2, :)
 
 fprintf('Starting recording now.\n')
 % You can specify your own custom names (trial numbers) here.
-volciclab_optitrack_start_recording(motion_tracker, 'recording001');
+volciclab_optitrack_start_recording(motion_tracker, recording_name);
 
 pause(rand()*3); % Just randomly wait
 
@@ -33,11 +40,20 @@ volciclab_optitrack_stop_recording(motion_tracker)
 
 fprintf('Recording stopped.\n')
 
+% Gracefully retire the connection
 volciclab_optitrack_kill(motion_tracker);
 
 % We can also convert .tak files to CSV, and access the data from Matlab. [READ THE DOCS AT THE END OF THE PAGE ABOUT HOW THIS WORKS!]
-my_data = volciclab_optitrack_get_take('Z:\Session 2021-10-03\test_experiment\recording001.tak', ...
-                                       'Z:\Session 2021-10-03\test_experiment\recording001.csv');
+my_data_with_quaternion_rotations = volciclab_optitrack_get_take( ...
+  sprintf("%s/%s%s.tak", path_to_your_session, experiment_name, recording_name), ...
+  sprintf("%s/%s%s.csv", path_to_your_session, experiment_name, recording_name));
+
+% Note the extra argument here. See what this does below.
+my_data_with_euler_rotations = volciclab_optitrack_get_take( ...
+  sprintf("%s/%s%s.tak", path_to_your_session, experiment_name, recording_name), ...
+  sprintf("%s/%s%s.csv", path_to_your_session, experiment_name, recording_name), ...
+  1);
+
 ```
 
 All lab computers have a network drive, `Z:\` mounted, which is where Motive records the take files.
@@ -94,7 +110,7 @@ You can get a single rigid body data using:
 `volciclab_optitrack_get_rigid_body_data(natnet_object, [1])`, (note that this is numeric array) or
 `volciclab_optitrack_get_rigid_body_data(natnet_object, ["Jimi Matala"])` (note that this is a string array)
 
-You can also get a multiple rigid bodies, in any order with:
+You can also get a set of multiple rigid bodies, in any order with:
 `volciclab_optitrack_get_rigid_body_data(natnet_object, [1, 2])`, or
 `volciclab_optitrack_get_rigid_body_data(natnet_object, ["Jimi Matala", "Bonkers Conkers"])`
 
@@ -144,9 +160,9 @@ This function returns `rigid_body_structure`, with the following fields:
 - time, in seconds, which tells you the time difference between subsequent frames
 - rigid_body(n), which is a structure array, for n rigid bodies you had in the recording. Its fields are:
   - rigid_body(n).translation is a set of triplets of X-Y-Z coordinates for each frame. **The units are in millimetres!**
-  - rigid_body(n).rotation is a set of quad tuple of quaternion rotations
-  - rigid_body(n).tracking_error is the tracking error of the rigid body in each frame.
-**[IMPORTANT]:** The rigid body indexing is exactly the same as you would get with the NatNet SDK. Since the header of the .csv files generated is following a non-standard, Matlab has a hard time reading it. If in doubt, check the .csv file itself.
+  - rigid_body(n).rotation is the rotation, in the format and order as requested above **The units are in degrees!**
+  - rigid_body(n).tracking_error is the tracking error of the rigid body in each frame, in millimetres.
+**[IMPORTANT]:** The rigid body indexing is exactly the same as you set it in Motive. Since the header of the .csv files generated is following a non-standard, Matlab has a hard time reading it. If in doubt, check the .csv file itself.
 
 ## .tak to .csv converter
 
