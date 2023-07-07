@@ -97,9 +97,11 @@ Return values are (in order):
 - `timestamp` in microseconds, which is the time elapsed since data acquisition began
 - `rigid_body_ids`, which is a number of array of numbers, for each rigid body
 - `rigid_body_names`, which is a string array of the names of the rigid bodies you assgned in Motive.
+
 ***
 
 ### `volciclab_optitrack_get_rigid_body_data(natnet_object, rigid_body_names)` or
+
 ### `volciclab_optitrack_get_rigid_body_data(natnet_object, rigid_body_ids)`
 
 This function gets the latest rigid body data from the system. `natnet_object` is the object you created using `volciclab_optitrack_init()`. In this function, you can get a single or multiple rigid body data, and you can refer to them with either IDs, or by their names as array. **Please do not mix numbers and strings in a single in the input argument.**.
@@ -107,17 +109,21 @@ This function gets the latest rigid body data from the system. `natnet_object` i
 For example, let's say that you have two rigid bodies in the system: 'Bonkers Conkers' and 'Jimi Matala'. The IDs are '1', and '2', respectively.
 
 You can get a single rigid body data using:
+`volciclab_optitrack_get_rigid_body_data(natnet_object, 134`, (note that this is numeric value) or
 `volciclab_optitrack_get_rigid_body_data(natnet_object, [1])`, (note that this is numeric array) or
-`volciclab_optitrack_get_rigid_body_data(natnet_object, ["Jimi Matala"])` (note that this is a string array)
+`volciclab_optitrack_get_rigid_body_data(natnet_object, "Jimi Matala")` (note that this is a string) or
+`volciclab_optitrack_get_rigid_body_data(natnet_object, 'Jimi Matala")` (note that this is a character array)
 
-You can also get a set of multiple rigid bodies, in any order with:
-`volciclab_optitrack_get_rigid_body_data(natnet_object, [1, 2])`, or
-`volciclab_optitrack_get_rigid_body_data(natnet_object, ["Jimi Matala", "Bonkers Conkers"])`
+The function automatically detects which input argument you used.
+
+You can also get a set of multiple rigid bodies, in any order. Just put them into an array..
+`volciclab_optitrack_get_rigid_body_data(natnet_object, [43, 28])`, or
+`volciclab_optitrack_get_rigid_body_data(natnet_object, {"Jimi Matala", "Bonkers Conkers"})`
 
 **[IMPORTANT]:** The order of the return data is exactly the same as you specified in the input arguments.
 
 Return values are:
-`framecounter`, `timestamp`, these are single numbers, one specified the number of frames, the other specifies the time elapsed since data acquisition began
+`framecounter`, `timestamp`, these are single numbers, one specified the number of frames, the other specifies the time elapsed in microseconds since data acquisition began
 `translation` is an n-by-3 array, for n number of rigid bodies. They are X-Y-Z triplets. As per the streaming settings in Motive, Z is upward, and units are in metres.
 `quaternion` is an n-by-4 array, for n number of rigid bodies. This is the rotation data for each rigid body, in quaternion (`W-X-Y-Z` or `w-i-j-k`) format.
 ***
