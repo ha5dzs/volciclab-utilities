@@ -106,7 +106,7 @@ Return values are (in order):
 
 This function gets the latest rigid body data from the system. `natnet_object` is the object you created using `volciclab_optitrack_init()`. In this function, you can get a single or multiple rigid body data, and you can refer to them with either IDs, or by their names as array. **Please do not mix numbers and strings in a single in the input argument.**.
 
-For example, let's say that you have two rigid bodies in the system: 'Bonkers Conkers' and 'Jimi Matala'. The IDs are '1', and '2', respectively.
+For example, let's say that you have two rigid bodies in the system: 'Bonkers Conkers' and 'Jimi Matala'. The IDs are '1', and '2', respectively, but the ID could realistically be any number.
 
 You can get a single rigid body data using:
 
