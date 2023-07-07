@@ -109,6 +109,7 @@ This function gets the latest rigid body data from the system. `natnet_object` i
 For example, let's say that you have two rigid bodies in the system: 'Bonkers Conkers' and 'Jimi Matala'. The IDs are '1', and '2', respectively.
 
 You can get a single rigid body data using:
+
 `volciclab_optitrack_get_rigid_body_data(natnet_object, 134`, (note that this is numeric value) or
 `volciclab_optitrack_get_rigid_body_data(natnet_object, [1])`, (note that this is numeric array) or
 `volciclab_optitrack_get_rigid_body_data(natnet_object, "Jimi Matala")` (note that this is a string) or
