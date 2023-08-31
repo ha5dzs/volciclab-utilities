@@ -6,7 +6,7 @@ This is a repository of all the internally-made scripts and applications for the
 
 When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why:
 
-![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure.png "Now you probably see why I needed to write this all down!")
+![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure-2023.png "Now you probably see why I needed to write this all down!")
 
 All the local networks inside the lab are isolated from the outside world by default. The camera network is connected to the Netgear 24-port switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G` and `Volciclab-5G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check the hardware in the lab, or refer to the network map.
 
