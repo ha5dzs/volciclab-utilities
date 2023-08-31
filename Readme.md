@@ -50,4 +50,4 @@ While you can control the robot directly using TCP commands and send it scripts,
 
 ### [That Velmex thing](Velmex/Readme.md)
 
-...will be added when it's finally here.
+The Velmex Thing is a contraption of two linear stages and a 'rotary table'. It is controlled over a serial port.
