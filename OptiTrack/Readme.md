@@ -105,6 +105,7 @@ Return values are (in order):
 ### `volciclab_optitrack_get_rigid_body_data(natnet_object, rigid_body_ids)`
 
 This function gets the latest rigid body data from the system. `natnet_object` is the object you created using `volciclab_optitrack_init()`. In this function, you can get a single or multiple rigid body data, and you can refer to them with either IDs, or by their names as array. **Please do not mix numbers and strings in a single in the input argument.**.
+**If you call this function too often (i.e. every 10 millisecond or so), you will fill some buffer and Motive will stop responding to external commands. Slow down the loop when you are checking coordinates or time!**
 
 For example, let's say that you have two rigid bodies in the system: 'Bonkers Conkers' and 'Jimi Matala'. The IDs are '1', and '2', respectively, but the ID could realistically be any number.
 
