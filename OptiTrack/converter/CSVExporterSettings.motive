@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-16"?>
+<CSVExporter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Overwrite>true</Overwrite>
+  <Scale>1</Scale>
+  <FrameRate>-1</FrameRate>
+  <EndFrame>-2147483648</EndFrame>
+  <StartFrame>2147483647</StartFrame>
+  <WriteHeader>true</WriteHeader>
+  <RotationType>QuaternionFormat</RotationType>
+  <WriteQualityStats>true</WriteQualityStats>
+  <WriteBoneMarkers>false</WriteBoneMarkers>
+  <WriteBones>true</WriteBones>
+  <WriteRigidBodyMarkers>false</WriteRigidBodyMarkers>
+  <WriteRigidBodies>true</WriteRigidBodies>
+  <WriteMarkers>false</WriteMarkers>
+  <UseWorldSapceCoordinates>true</UseWorldSapceCoordinates>
+  <Units>Units_Millimeters</Units>
+</CSVExporter>

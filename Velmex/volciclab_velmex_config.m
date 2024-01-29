@@ -33,4 +33,3 @@ velmex.config_strings_fyi_rtfm = {
     "getM2M"; % Get Motor 2's type (4: PK266, 3A)
     "getM3M"; % Get Motor 3's type (1: PK245, 1.2A)
 };
-
