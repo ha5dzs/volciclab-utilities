@@ -6,7 +6,7 @@ The Velmex thing is a universal set of linear stages and a rotator. Each linear 
 Each motor has a step of 1.8°, so there are 200 steps per revolution. Since this system is difficult to get and has been on the market for a long time, it is not as universal as other devices in Volciclab. The code is hard-coded for this configuration:
 
 * Axis 1 is for the 'long' stage, with the two carriages on the picture
-* Axis 2 is for the 'short' stage, vertcially aligned in the picture with the yellow damper wheel attached to it
+* Axis 2 is for the 'short' stage, vertically aligned in the picture with the yellow damper wheel attached to it
 * Axis 3 is for the rotator on the mounting plate.
 
 This is just for the electrical connections, of course you are free to change the physical arrangement of this device, as long as the correct connector goes to the correct motor.
@@ -20,7 +20,7 @@ The motors themselves are not very strong. But, they are working on very low gea
 
 ## Host system configuration and implementation notes
 
-The Velmex Thing uses an RS-232 serial port to communicate with the host computer. We have an FTDI-based USB - RS-232 adapter, so the system can be connected to pretty much anything. Check the device manager or your device tree for your serial port, and edit `volciclab_velmex_config.m` accordingly. There are some additonal information about the system in this script as well, but of course it is no subsitute for the manual!
+The Velmex Thing uses an RS-232 serial port to communicate with the host computer. We have an FTDI-based USB - RS-232 adapter, so the system can be connected to pretty much anything. Check the device manager or your device tree for your serial port, and edit `volciclab_velmex_config.m` accordingly. There are some additional information about the system in this script as well, but of course it is no substitute for the manual!
 
 **Note** that the serial port in Matlab has a massive, 40 second timeout set. This is because moving this thing takes a lot of time. If you slow down your motors, it will be even longer. You need to make additional measures to handle if that happens.
 
@@ -45,7 +45,7 @@ There is an additional cell array, but that is for documentation purposes only. 
 
 ### `volciclab_velmex_init.m`
 
-This is the big script that resets the controller, sets the motor speeds to the maximum, moves the stages to find the endstops, and then moves the entire contraption to the middle and the rotator to 0°. Afterwards, it resets the coordinate system for this to be origin, and you can use it as a default.
+This is the big script that resets the controller, sets the motor speeds to the maximum, moves the stages to find the end stops, and then moves the entire contraption to the middle and the rotator to 0°. Afterwards, it resets the coordinate system for this to be origin, and you can use it as a default.
 
 In addition, this script measures the length of each linear stage in steps, and calculates the middle position for you. These variables are added to the `velmex` structure, namely:
 
@@ -84,3 +84,19 @@ Following some sanity checks, the function sends the instruction to the controll
 ### `volciclab_velmex_kill()`
 
 This function just sends the kill all movement command (`K<CR>`) over the serial port. There is no guarantee or any check to see if the controller has received it or in fact does anything about it. This function is not used normally. See the [health and safety section](#health-and-safety) for more information.
+
+### `volciclab_velmex_rotator_init`
+
+Note that this script is For applications where only the rotator is used, it includes the zero calibration verification. While the rotator mechanism itself is very precise, the magnet and hall-sensor combo detecting zero transition is not. Instead of manually measuring the hysteresis as it was done in the previous Arduino-based device, here, manual interaction is needed to verify the zero position. So, this script opens communication to the controller, and moves the rotator to absolute zero position stored in the controller. This may or may not be the physical zero position, as indicated on the dial. This is why the code pops a question at you. If you say yes, then the current zero position will be the absolute zero position. If you say no, then it gives you instructions on how to move the device to the actual zero position, and then you need to run this script again.
+
+### `volciclab_velmex_rotate()`
+
+This moves the rotator to the desired angle. The input argument is in degrees, it is working with absolute angles. So, if you moved the rotator to -60°, and then you ask it to move it to +300°, then the object will end up in the same position, but it did a full rotation. If you move it more than 360°, then it will do multiple turns. While this function accepts any number, please keep it to sensible values.
+
+```
+%VOLCICLAB_OPTITRACK_MOVE_ROTATOR Yuu guessed it, rotates the rotator to
+%the specified angle.
+% Calibrate the rotator first.
+% Input argument:
+%   -rotation_angle, in degrees. Can be any number.
+```
