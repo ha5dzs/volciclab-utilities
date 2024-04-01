@@ -38,7 +38,7 @@ Base address `+2` | `0-255` | Green
 Base address `+3` | `0-255` | Blue
 Base address `+4` | `0-255` | White
 Base address `+5` | `0-255` | Effect
-Base address `+6' | `0-255' | Speed
+Base address `+6` | `0-255` | Speed
 
 # the fact that Microsoft Windows is used
 
