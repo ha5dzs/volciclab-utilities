@@ -25,7 +25,7 @@ The robot has six **joints**, the shoulder that is closest to the base, the elbo
 
 **Forward kinematics** is the process of calculating the position and orientation of the tool contact point from the joint angles, and conversely, **inverse kinematics** is the process of calculating the required joint angles for a given tool contact point position and orientation.
 
-**Freedrive** gives the impression of the robot joints not being controlled by the controller, so the robot can be moved manually. In this mode, you can touch the robot, and you can set into whatever pose the joints allow. This is just an illusion, because the robot is actually costantly applying force on the joints and disengaged the brakes. The robot starts to fall or jerk upwards quickly when the expected payload (the tool and whatever the tool holds) are not what is set within its settings. If this happens, the robot will do a propective stop, and you need to then adjust the weight of the tool in your tool definition.
+**Freedrive** gives the impression of the robot joints not being controlled by the controller, so the robot can be moved manually. In this mode, you can touch the robot, and you can set into whatever pose the joints allow. This is just an illusion, because the robot is actually constantly applying force on the joints and disengaged the brakes. The robot starts to fall or jerk upwards quickly when the expected payload (the tool and whatever the tool holds) are not what is set within its settings. If this happens, the robot will do a protective stop, and you need to then adjust the weight of the tool in your tool definition.
 ***
 In the Volciclab implementation, the **teaching** of the robot is the process of switching into freedrive, moving the robot to the required pose and recording the pose string that is displayed on the server. Then, in the Matlab code, you can call these poses in sequence.
 ***
@@ -61,7 +61,7 @@ What you see in the above figure is the actual plain text messages across the ne
 
 ## The URScript code running on the robot's controller
 
-The robot is controlled via an opcode-argument pair. The code first checks for an opcode, and if required, requests the server for an arugment. Following some basic sanity checks, the appropriate instruction is executed.
+The robot is controlled via an opcode-argument pair. The code first checks for an opcode, and if required, requests the server for an argument. Following some basic sanity checks, the appropriate instruction is executed.
 
 The code is divided to three parts:
 
@@ -259,7 +259,7 @@ The robot will report as busy while executing.
 This is basically a 'pick and place' feature with the Robotiq gripper.
 
 There are three poses to be specified here, but there are five waypoints. The input arguments are the `start_pose`, the `via_pose`, and the `end_pose`. Additionally, this part of the program creates the `start_pose_elev` and `end_pose_elev`, which are 30 mm above `start_pose` and `end_pose`, respectively.
-Execution is as follows: the robot approaches the `start_pose_elev`. It opens the grip to the specified size, then it descends to `start_pose`, after which it will engage the grip. Following that, hopefully with a sucessful grip (not checked by the code!) the robot will go back to `start_pose_elev`, then will travel to `end_pose_elev`, following a curved path that includes `via_pose`. Having arrived to `end_pose_elev`, it descends to `end_pose`, disengages the grip, and goes back to the `end_pose_elev`.
+Execution is as follows: the robot approaches the `start_pose_elev`. It opens the grip to the specified size, then it descends to `start_pose`, after which it will engage the grip. Following that, hopefully with a successful grip (not checked by the code!) the robot will go back to `start_pose_elev`, then will travel to `end_pose_elev`, following a curved path that includes `via_pose`. Having arrived to `end_pose_elev`, it descends to `end_pose`, disengages the grip, and goes back to the `end_pose_elev`.
 
 See the relevant bit of code, and [how this part is called from Matlab](#volciclab_robot_move_from_via_tostart_pose-via_pose-end_pose-open_grip_size).
 
@@ -361,7 +361,7 @@ For the robot-related variables, while `robot_busy` is a boolean, everything els
 
 The `command_fifo` is a deque of string tuples, which stores the opcode and argument for the robot. Again, this is all in plain text.
 
-The `log_string_array` is where the diagnoistic messages are stored. These are displayed in the GUI, and optionally can be saved into a file.
+The `log_string_array` is where the diagnostic messages are stored. These are displayed in the GUI, and optionally can be saved into a file.
 
 Finally, `keep_running` is also a boolean, and when set to false all threads will join (terminate).
 
@@ -447,7 +447,7 @@ udp_object = udpport('IPV4', 'Timeout', 0.1); % 100 ms timeout
 write(udp_object, 'freedrive;ON', '127.0.0.1', 2501);
 ```
 
-* Optionally, we may expect a reply. In this case, this is implemented in a query-delay-respone format. Using the `udp_object` declared above,
+* Optionally, we may expect a reply. In this case, this is implemented in a query-delay-response format. Using the `udp_object` declared above,
 
 ```Matlab
 % Query: get the status string from the server
@@ -580,7 +580,7 @@ This function picks up an object from `start_pose`, and takes it to `end_pose` v
 This function instructs the robot to move the tool contact point, so this moves the robot's end to the desired position. The pose must be reachable and within safety limits.
 
 ```Matlab
-%   Input arugments are:
+%   Input arguments are:
 %   -new_pose, which is a vector with 6 values. These are:
 %           -X, Y, Z, which is the tool contact point's coordinates
 %           -Rx, Ry, Rz, which is the tool contact point's rotation IN RADIANS!
@@ -597,7 +597,7 @@ This function instructs the robot to move the tool contact point.
 **IMPORTANT: For internal use, the rotation order is changed to make sure they are compatible with other systems!**
 
 ```Matlab
-%   Input arugments are:
+%   Input arguments are:
 %   -new_pose, which is a vector with 6 values. These are:
 %           -X, Y, Z, which is the tool contact point's coordinates
 %           -R, P, Y, which is the tool contact point's rotation in roll-pitch-yaw, and in radians
@@ -613,7 +613,7 @@ This function instructs the robot to move the tool contact point.
 This function sets the gripper on the robot. The gripper must be mounted, connected, and the correct robot program must be loaded before this function can be called.
 
 ```Matlab
-%   Input arugment:
+%   Input argument:
 %   -new_gripper_value, which is a number between 0 and 100.
 ```
 
