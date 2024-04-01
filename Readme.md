@@ -14,11 +14,11 @@ All the local networks inside the lab are isolated from the outside world by def
 
 The [OptiTrack](OptiTrack/Readme.md) cameras are connected to the Netgear PoE ([Power over Ethernet](https://en.wikipedia.org/wiki/Power_over_Ethernet)) switch. While these are sitting on the network, they don't actually care about a DHCP server at all. They just assume various addresses, seemingly in bootup order or serial number order. They will cause an IP address conflict if the DHCP range is within the camera addresses. To counteract this, the router is configured to have a DHCP range from `192.168.69.101` to `192.168.69.199`.
 
-Note that the OptiTrack computer that runs Motive is connected to this network via a deicated PCI-E network adapter.
+Note that the OptiTrack computer that runs Motive is connected to this network via a dedicated PCI-E network adapter.
 
 ### Black cables: The Volciclab internal network
 
-If you have an own device or anything that doesn't upport IEEE 802.1X, you can connect to this network. The password for this network is not disclosed here, ask for it. There are certain things that have to be on a fixed IP. These are:
+If you have an own device or anything that doesn't support IEEE 802.1X, you can connect to this network. The password for this network is not disclosed here, ask for it. There are certain things that have to be on a fixed IP. These are:
 
 * The Optotrak SCUs: `192.168.42.2` (on the truss), and `192.168.42.3` on the desk, but can be portable
 * The OptiTrack computer, `192.168.42.5`. This one has a Samba share, so you can download and store your recordings (You should also make backups as well. No data should ever be lost!)
@@ -46,8 +46,12 @@ This one is the fancy new one with the copious number of cameras. There is a sim
 
 ### [Robot server](robot_server/Readme.md)
 
-While you can control the robot directly using TCP commands and send it scripts, nobody expects you to go through 600 pages of documentation and cryptic error messages. This server, along with the software on the robot's controller, implmenets a simple plain text-based protocol, and added some extra features that normally would require a PLC.
+While you can control the robot directly using TCP commands and send it scripts, nobody expects you to go through 600 pages of documentation and cryptic error messages. This server, along with the software on the robot's controller, implments a simple plain text-based protocol, and added some extra features that normally would require a PLC.
 
 ### [The Velmex Thing](Velmex/Readme.md)
 
 The Velmex Thing is a contraption of two linear stages and a 'rotary table'. It is controlled over a serial port.
+
+### [Lights](Lights/Readme.md)
+
+DMX512 lights, which can be driven with the cheap USB adapter [using this software](https://github.com/ha5dzs/udmx-matlab-commander).
