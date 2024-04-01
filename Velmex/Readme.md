@@ -16,7 +16,7 @@ This is just for the electrical connections, of course you are free to change th
 
 ## `[Health and safety!]`
 
-The motors themselves are not very strong. But, they are working on very low gear ratios, so the torques and forces are enormous. If they pinch you and/or your participant, it can cause some serious injury. **It is your responsibility to create and maintain a safe environment during your experiment, and to know how to turn The Velmex Thing off to avoid harm!**
+The motors themselves are not very strong. But, they are working on very low gear ratios, so the torques and forces are high. **It is your responsibility to create and maintain a safe environment during your experiment, and to know how to turn The Velmex Thing off to avoid harm!**
 
 ## Host system configuration and implementation notes
 
@@ -83,4 +83,4 @@ Following some sanity checks, the function sends the instruction to the controll
 
 ### `volciclab_velmex_kill()`
 
-This function just sends the kill all movement command (`K<CR>`) over the serial port. There is no guarantee or any check to see if the controller has received it or in fact does anything about it. This function is not used normally. See the [health and safety section](#health-and-safety) to see how not to turn The Velmex Thing into a Bloodthirsty Humanmincer.
+This function just sends the kill all movement command (`K<CR>`) over the serial port. There is no guarantee or any check to see if the controller has received it or in fact does anything about it. This function is not used normally. See the [health and safety section](#health-and-safety) for more information.

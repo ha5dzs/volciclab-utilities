@@ -12,7 +12,6 @@
 
 **Use with caution. Understand what you are doing. Stay safe.**
 
-While there was considerable progress in AI, the robot uprising hasn't happened yet. This robot can't think for you, and will execute any instruction no matter how idiotic or destructive it is.
 
 ***
 
@@ -136,7 +135,7 @@ Let's say that we have an awesome world-changing robot program, which we name `s
 
 You can see that URScript treats strings in a case sensitive manner. You can forget about nicely typing up the code on the teach pendant. You must click each and every statement, and use the on-screen keyboard. You can also use a USB keyboard, but the layout will be Danish. It cannot be changed from the interface.
 
-* `skynet.script`, which has some added information, including some hardware set-up, and peripherals such as a vacuum-based gripper and MODBUS interface. Much for the ego of the developers, they defined the units in metres, and apparently they operate at femtometer precision:
+* `skynet.script`, which has some added information, including some hardware set-up, and peripherals such as a vacuum-based gripper and MODBUS interface. The developers defined the units in metres, and apparently they operate at femtometer precision:
 
 ```URScript
  global My_laptop=p[0.37210999999999994,-0.5543799999999999,0.17111,-0.24416661269018833,-1.7487795435078342,1.416471282499612]
@@ -146,7 +145,7 @@ You can see that URScript treats strings in a case sensitive manner. You can for
 Changing this also does nothing, it's for your information only.
 
 * `skynet.urp` is the file where things happen.
-This is actually a zip file with an overwritten extension, where by the Infinite Wisdom of Universal Robots, they created an XML-based document, where they encoded each and every character in the script as a separate node. So your code kind of reads vertically.
+This is actually a zip file with an overwritten extension, where Universal Robots created an XML-based document, where they encoded each and every character in the script as a separate node. So your code kind of reads vertically.
 
 So these two lines
 
@@ -205,9 +204,6 @@ become this:
 
 So unless you are prepared to create a trainwreck code like this, your 'easiest' option is to use the teach pendant. The interface there is made in Java. It can crash, and it will crash when it's most inconvenient. So save and backup regularly.
 
-And from here, I congratulate the Great Engineers of Universal Robots, whom, they ~~created~~ dreamt up this wonderful interface with its straightforward code, with the exception that this little robot's price tag is so hefty that one could buy two new cars with it.
-
-Egon Olsen would approve.
 
 ## The currently implemented available robot commands are:
 
