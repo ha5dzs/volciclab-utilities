@@ -10,7 +10,7 @@ There are additional caveats and intricacies, read below.
 
 Lights can be bright. Do not shine in the eyes, and avoid strobing as much as possible. Not only strobing is annoying, but photosensitive epileptics can develop seizures.
 
-# Instrucition sets
+# Instruction sets
 
 We have these RGB floodlights. They use 3x3 10W RGB chips, so there will be some parallax error between the primary colours. Additional diffusors might be needed to achieve colour uniformity when using in close proximity (1-2m).
 
