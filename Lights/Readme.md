@@ -42,7 +42,7 @@ Base address `+6` | `0-255` | Speed
 
 # The fact that Microsoft Windows is used
 
-When using Windows to drive the uDMX dongle, please be careful not to update it too often (as in less than every 10 milliseconds or so). If this happens, Windows 11's kernel will block the device (Code 48, then Code 10), and will keep it blocked until the number of USB requests to this device drop below a certain threshold. Use and modify `volciclab_lights_restore_access' to check if the device is available again as required. While it's good practice to use as few USB requests as possible, sometimes it is unavoidable. Also, depending on future Windows updates, the hammering threshold (possibly something set in the scheduler algorithm) policy may change, as it did in the January 2024 update.
+When using Windows to drive the uDMX dongle, please be careful not to update it too often (as in less than every 10 milliseconds or so). If this happens, Windows 11's kernel will block the device (Code 48, then Code 10), and will keep it blocked until the number of USB requests to this device drop below a certain threshold. Use and modify `volciclab_lights_restore_access' to check if the device is available again as required. While it's good practice to use as few USB requests as possible, sometimes it is unavoidable. Also, depending on future Windows updates, the hammering threshold (possibly something set in the scheduler algorithm) policy may change, as it did in the January 2024 update. Disabling core isolation and memory integrity protection may help this issue.
 
 # Intel USB 3.0 root hub
 
