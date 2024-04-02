@@ -40,13 +40,17 @@ Base address `+4` | `0-255` | White
 Base address `+5` | `0-255` | Effect
 Base address `+6` | `0-255` | Speed
 
-# the fact that Microsoft Windows is used
+# The fact that Microsoft Windows is used
 
-When using Windows to drive the uDMX dongle, please be careful not to update it too often. If this happens, Windows 11's kernel will block the device (Code 48, then Code 10), and will keep it blocked until the number of USB requests to this device drop below a certain threshold. Use and modify `volciclab_lights_restore_access' to check if the device is available again as required. While it's good practice to use as few USB requests as possible, sometimes it is unavoidable. Also, depending on future Windows updates, the hammering threshold policy may change, as it did in the January 2024 update.
+When using Windows to drive the uDMX dongle, please be careful not to update it too often (as in less than every 10 milliseconds or so). If this happens, Windows 11's kernel will block the device (Code 48, then Code 10), and will keep it blocked until the number of USB requests to this device drop below a certain threshold. Use and modify `volciclab_lights_restore_access' to check if the device is available again as required. While it's good practice to use as few USB requests as possible, sometimes it is unavoidable. Also, depending on future Windows updates, the hammering threshold (possibly something set in the scheduler algorithm) policy may change, as it did in the January 2024 update.
+
+# Intel USB 3.0 root hub
+
+If you set spurious temporary device failures in Device Manager, try changing the USB root hub. Either use something in a Thunderbolt port with a USB-C connector, or try to connect the device in a separate PCI-E USB root hub on the workstations is possible. The uDMX device also has two LEDs. One is for power, the other is for data communication. If still in doubt, use a packet sniffer like Wireshark.
 
 # Wiring
 
-DMX512 is related to [RS-485](https://en.wikipedia.org/wiki/RS-485), with the exception that an entire frame is transmitted. This standard is using differential signal, and ideally has some pull-up resistors for the two data lines. In reality, from the cheap lights, these are missing. This causes an impedance mismatch along the transmission line (i.e. the 'wiring'), which will cause signal reflection. This makes it prone for some DMX addresses to not have valid data in the frame in certain physical location along the cable. If you get this, and you don't have a signal repeater or at least a 12V pull-up resistor set, then you need to change the address of the light you have trouble with.
+DMX512 is related to [RS-485](https://en.wikipedia.org/wiki/RS-485), with the exception that an entire 512-byte frame is transmitted. This standard is using differential signal, and ideally has some pull-up resistors for the two data lines. In reality, from the cheap lights, these are missing. This causes an impedance mismatch along the transmission line (i.e. the 'wiring'), which will cause signal reflection. This makes it prone for some DMX addresses to not have valid data in the frame in certain physical location along the cable. If you get this, and you don't have a signal repeater or at least a 12V pull-up resistor set, then you need to change the address of the light you have trouble with.
 
 # The code to drive this device
 
