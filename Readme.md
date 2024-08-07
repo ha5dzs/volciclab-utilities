@@ -26,9 +26,9 @@ If you have an own device or anything that doesn't support IEEE 802.1X, you can 
 * The [Universal Robots UR3e robotic arm](robot_server/Readme.md), which is on `192.168.42.10`
 * Everything else (3D printer, your gadgets, IoT stuff) can be on DCHP, and will have an IP address from `192.168.42.35` onwards.
 
-### Gray cables: NYUAD uplink
+### Gray cables: Uplink to ResNet or NYUAD
 
-For the purpose of software development and firmware upgrades, the Volciclab network can also be connected to the NYUAD network. The Ethernet 2 port (as labelled on the back, and not necessarily as per Windows) is permanently connected to the NYUAD network.
+For the purpose of software development and firmware upgrades, the Volciclab network is connected to ResNet, which is essentially a general-purpose network to access the internet. NYUAD resources are not available through this connection. The Ethernet 2 port (as labelled on the back, and not necessarily as per Windows) on Volciclab Server is permanently connected to the NYUAD network, for the purpose of automated backups to a NYUAD-operated shared drive.
 
 #### A note on networks
 
