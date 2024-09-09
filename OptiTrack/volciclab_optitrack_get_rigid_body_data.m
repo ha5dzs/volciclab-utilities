@@ -126,6 +126,14 @@ function [framecounter, timestamp, translation, quaternion] = volciclab_optitrac
         % Now we go through our Ids, and get the data.
         for(i=1:length(rigid_body_indices))
             % These IDs are as per we requested in the input argument.
+            % Optionally:
+            % if(latest.frame.RigidBodies(rigid_body_indices(i)).Tracked)
+            %   .... (the stuff below)
+            % else
+            %   translation(i, :) = [NsaN, NaN, Nan];
+            %   quaternion(i, :) = [NaN, NaN, NaN, NaN];
+            % end
+
             translation(i, :) = [latest_frame.RigidBodies(rigid_body_indices(i)).x, ...
                                  latest_frame.RigidBodies(rigid_body_indices(i)).y, ...
                                  latest_frame.RigidBodies(rigid_body_indices(i)).z];
