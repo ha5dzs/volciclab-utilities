@@ -10,6 +10,34 @@ There are additional caveats and intricacies, read below.
 
 Lights can be bright. Do not shine in the eyes, and avoid strobing as much as possible. Not only strobing is annoying, but photosensitive epileptics can develop seizures.
 
+***
+
+# The Philips Hue lights
+
+There are 12, 1100-lumen white-and-colour E27 lights mounted on the truss. They have their own switch on the truss too, see the label. When used in RGB mode, they drop to about 600-800 lumen each, and it is just enough to illuminate the lab to XXXX lux when driven on full blast. They are connected via Zigbee to the Philips Hue gateway, and there is a Hue remote as well. Settings for common colour temperatures are saved as 'scenes', which can be accessed by pressing the 'Hue' button on the Hue remote. These scenes are:
+
+* 2700K (`0.45986; 0.41060`)
+* 4000K (`0.38044; 0.37675`)
+* 6500K (`0.31272; 0.32903`)
+* 7600K (`0.29924; 0.30911`)
+* That terrible `0.83;0.83` colour the original ceiling lights and Robert's Osram flood lights can do
+
+Note that all these lights are set to RGB mode. You can dim these lights to your liking, they will keep the set chromaticity values. If you want something custom, you can [use this Python code](to use it in a slightly more controlled manner than what the Hue app allows) and save an additional scene in the Hue app.
+
+For the tl;dr types, the gamut is made from the following primary colours:
+
+| Colour | Chromaticity (x;y) |
+|--------|---------------|
+| Red | `0.6915; 0.3083` |
+| Green | `0.17; 0.7` |
+| Blue | `0.1532; 0.0475` |
+
+There is no immediate Matlab interface made for this system. The Python code should only be used when precise and absolute control is required to maintain a particular ambient illumination and colour temperature.
+
+ ***
+
+# The DMX lights
+
 # Instruction sets
 
 We have these RGB floodlights. They use 3x3 10W RGB chips, so there will be some parallax error between the primary colours. Additional diffusors might be needed to achieve colour uniformity when using in close proximity (1-2m).

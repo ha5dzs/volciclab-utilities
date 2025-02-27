@@ -6,7 +6,7 @@ This is a repository of all the internally-made scripts and applications for the
 
 When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why:
 
-![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure-august-2024.png "Now you probably see why I needed to write this all down!")
+![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure-february-2025.png "Now you probably see why I needed to write this all down!")
 
 All the local networks inside the lab are isolated from the outside world by default. The camera network is connected to the Netgear 24-port switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G` and `Volciclab-5G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check the hardware in the lab, or refer to the network map.
 
@@ -25,6 +25,11 @@ If you have an own device or anything that doesn't support IEEE 802.1X, you can 
 * The **Ethernet 1 port, as labelled on the back, not as per Windows of the experimental computers**: `192.168.42.6` and `192.168.42.7`
 * The [Universal Robots UR3e robotic arm](robot_server/Readme.md), which is on `192.168.42.10`
 * Everything else (3D printer, your gadgets, IoT stuff) can be on DCHP, and will have an IP address from `192.168.42.35` onwards.
+
+These are some other devices that have a fixed network address, but they are assigned via DHCP. This is because some devices cannot be configured directly, or it can potentially impede a firmware upgrade process. These are:
+
+* The Philips Hue Bridge, which is on `192.168.42.132`
+* The Ethernet port on the 3D printer, which is on `192.168.42.123`
 
 ### Gray cables: Uplink to ResNet or NYUAD
 
@@ -54,4 +59,4 @@ The Velmex Thing is a contraption of two linear stages and a 'rotary table'. It 
 
 ### [Lights](Lights/Readme.md)
 
-DMX512 lights, which can be driven with the cheap USB adapter [using this software](https://github.com/ha5dzs/udmx-matlab-commander).
+There are two sets of lights in the lab. There is a set of Philips Hue lights for creating calibrated illumination in the lab. [See this code](https://github.com/ha5dzs/philips-hue-v2-lab-lights) to use it in a slightly more controlled manner than what the Hue app allows. Additionally, there are some DMX512 lights which can be driven with the cheap USB adapter [using this software](https://github.com/ha5dzs/udmx-matlab-commander). These is for creating illuminations for an experiment and can be directly controlled from Matlab.
