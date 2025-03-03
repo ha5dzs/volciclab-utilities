@@ -14,7 +14,7 @@ Lights can be bright. Do not shine in the eyes, and avoid strobing as much as po
 
 # The Philips Hue lights
 
-There are 12, 1100-lumen white-and-colour E27 lights mounted on the truss. They have their own switch on the truss too, see the label. When used in RGB mode, they drop to about 600-800 lumen each, and it is just enough to illuminate the lab to XXXX lux when driven on full blast. They are connected via Zigbee to the Philips Hue gateway, and there is a Hue remote as well. Settings for common colour temperatures are saved as 'scenes', which can be accessed by pressing the 'Hue' button on the Hue remote. These scenes are:
+There are 12, 1100-lumen white-and-colour E27 lights mounted on the truss. They have their own switch on the truss too, see the label. When used in RGB mode, they drop to about 400-600 lumen each, and it is just enough to illuminate the center of the lab to about 100 lux when driven on full blast. They are connected via Zigbee to the Philips Hue gateway, and there is a Hue remote as well. Settings for common colour temperatures are saved as 'scenes', which can be accessed by pressing the 'Hue' button on the Hue remote. These scenes are:
 
 * 2700K (`0.45986; 0.41060`)
 * 4000K (`0.38044; 0.37675`)
