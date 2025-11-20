@@ -21,8 +21,13 @@ function  volciclab_robot_move_tcp_rpy(new_pose)
     %% Assemble the string for the server
     % 4 and 5 are intentionally replaced, because we use RPY, but the robot
     % uses PRY. Nobody is wrong, but it's different standards.
+    %move_tcp_string = sprintf('move_tcp_rpy;(%0.8f, %0.8f, %0.8f, %0.8f, %0.8f, %0.8f)', ...
+    %    new_pose(1), new_pose(2), new_pose(3), new_pose(5), new_pose(4), new_pose(6) );
+
+    % Send the string to the server directly.
     move_tcp_string = sprintf('move_tcp_rpy;(%0.8f, %0.8f, %0.8f, %0.8f, %0.8f, %0.8f)', ...
-        new_pose(1), new_pose(2), new_pose(3), new_pose(5), new_pose(4), new_pose(6) );
+        new_pose(1), new_pose(2), new_pose(3), new_pose(4), new_pose(5), new_pose(6) );
+
 
     %% Send UDP packet.
 
