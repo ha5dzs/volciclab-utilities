@@ -8,11 +8,20 @@ When you come visit the lab, the wiring on the truss may not look like much, but
 
 ![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure-february-2025.png "Now you probably see why I needed to write this all down!")
 
-All the local networks inside the lab are isolated from the outside world by default. The camera network is connected to the Netgear 24-port switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G` and `Volciclab-5G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check the hardware in the lab, or refer to the network map.
+All the local networks inside the lab are isolated from the outside world by default. The camera network is connected to the Netgear 24-port switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check the hardware in the lab, or refer to the network map.
+
+If possible, due to the heavy wifi use on campus, prioritise connecting to `Volciclab-6G`, or `Volciclab-5G`. Only use `Volciclab-2.4G` when the conditions are dire or you are using some device that doesn't support anything else.
 
 ### Blue cables: The [OptiTrack](OptiTrack/Readme.md) camera network
 
 The [OptiTrack](OptiTrack/Readme.md) cameras are connected to the Netgear PoE ([Power over Ethernet](https://en.wikipedia.org/wiki/Power_over_Ethernet)) switch. While these are sitting on the network, they don't actually care about a DHCP server at all. They just assume various addresses, seemingly in bootup order or serial number order. They will cause an IP address conflict if the DHCP range is within the camera addresses. To counteract this, the router is configured to have a DHCP range from `192.168.69.101` to `192.168.69.199`.
+
+| IP address | Fixed/DHCP | Description |
+| --------- | ---------- | -------- |
+| `192.168.69.100` | `Fixed IP` | Old Etisalat-branded D-Link DIR-851 router. It just works as a DHCP server. |
+| `192.168.69.200` | `Fixed IP` | Linksys LGS352MPC POE Managed Switch |
+| `192.168.69.101 ... 199` | `DHCP Range` | The cameras use a custom proprietary protocol, they don't care about this anyway. |
+
 
 Note that the OptiTrack computer that runs Motive is connected to this network via a dedicated PCI-E network adapter.
 
@@ -20,16 +29,26 @@ Note that the OptiTrack computer that runs Motive is connected to this network v
 
 If you have an own device or anything that doesn't support IEEE 802.1X, you can connect to this network. The password for this network is not disclosed here, ask for it. There are certain things that have to be on a fixed IP. These are:
 
-* The Optotrak SCUs: `192.168.42.2` (on the truss), and `192.168.42.3` on the desk, but can be portable
-* The OptiTrack computer, `192.168.42.5`. This one has a Samba share, so you can download and store your recordings (You should also make backups as well. No data should ever be lost!)
-* The **Ethernet 1 port, as labelled on the back, not as per Windows of the experimental computers**: `192.168.42.6` and `192.168.42.7`
-* The [Universal Robots UR3e robotic arm](robot_server/Readme.md), which is on `192.168.42.10`
-* Everything else (3D printer, your gadgets, IoT stuff) can be on DCHP, and will have an IP address from `192.168.42.35` onwards.
+| IP address | Fixed/DHCP | Description |
+| --------- | ---------- | -------- |
+| `192.168.42.1` | `Fix IP` | TP Link router. Power can be interrupted with the 'WIFI' switch. |
+| `192.168.42.2` | `Fix IP` | Optotrak Certus SCU on top of the truss. Turn it on with the 'SCU' switch. |
+| `192.168.42.3` | `Fix IP` | Portable Optotrak Certus SCU, if needed. Hopefully not. |
+| `192.168.42.4` | `Fix IP` | 2.5G Ethernet on `dzs-pici-nas`, this in the Enclave network. |
+| `192.168.42.5` | `Fix IP` | Motherboard's Ethernet socket on the OptiTrack computer. |
+| `192.168.42.6` | `Fix IP` | `Ethernet 1` of `Volciclab Server`. |
+| `192.168.42.7` | `Fix IP` | `Ethernet 1` of `Volciclab 1`. |
+| `192.168.42.8` | `Fix IP` | `Ethernet 1` of `Volciclab 2`. |
+| `192.168.42.9` | `Fix IP` | TP-Link SX3016F 10G managed switch |
+| `192.168.42.10` | `Fix IP` | Internal Ethernet connector of the main unit [of the UR3e robot](robot_server/Readme.md). |
+| `192.168.42.11` | `Fix IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-one` |
+| `192.168.42.12` | `Fix IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-two` |
+| `192.168.42.15` | `Fix IP` | `wls5` (wifi) on `zoltan-nyuad-desktop`. |
+| `192.168.42.50 ... 249` | `DHCP Range` | Configured DHCP range for literally every other device on the network. |
+| `192.168.42.123` | `DHCP Reserved` | Bambu 3D printer, when configured in LAN mode (which is 99.9% of the time). |
+| `192.168.42.132` | `DHCP Reserved` | Philips Hue Bridge. |
 
-These are some other devices that have a fixed network address, but they are assigned via DHCP. This is because some devices cannot be configured directly, or it can potentially impede a firmware upgrade process. These are:
-
-* The Philips Hue Bridge, which is on `192.168.42.132`
-* The Ethernet port on the 3D printer, which is on `192.168.42.123`
+Note that the `TL-SG1218MPE` switch is completely unmanaged, with factory settings.
 
 ### Gray cables: Uplink to ResNet or NYUAD
 
@@ -68,3 +87,6 @@ This is a collection of scripts for implementing an experiment using a stand-alo
 ### [Archives](archival_regime.md)
 
 While there are cold-storage backups regularly made, this is a special regime that uses optical discs. May we never need this. These are neither incremental nor 'Towers of Hanoi' backups, they are just full backups that are to be taken yearly, ideally during the short time time when there is no data actively being collected.
+
+### Machine learning architecture
+
