@@ -4,13 +4,15 @@ This is a repository of all the internally-made scripts and applications for the
 
 ## The Volciclab Network Infrastructure
 
-When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why:
+When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why (NEED TO UPDATE THIS):
 
 ![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure-february-2025.png "Now you probably see why I needed to write this all down!")
 
-All the local networks inside the lab are isolated from the outside world by default. The camera network is connected to the Netgear 24-port switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check the hardware in the lab, or refer to the network map.
+All the local networks inside the lab are isolated from the outside world by default via the router's firewall. The camera network is connected to the Linksys 48-port switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check for labels on the hardware in the lab, or refer to the network map.
 
-If possible, due to the heavy wifi use on campus, prioritise connecting to `Volciclab-6G`, or `Volciclab-5G`. Only use `Volciclab-2.4G` when the conditions are dire or you are using some device that doesn't support anything else.
+If possible, due to the heavy wifi use on campus, prioritise connecting to `Volciclab-6G`, or `Volciclab-5G`. Only use `Volciclab-2.4G` when the conditions are dire or you are using some device that doesn't support anything else. For now, fancy things like WiFi 7's MLO features are disabled.
+
+Any device connected the the Volciclab network should prioritise 6 Ghz, then 5 Ghz, and only use 2.4 GHz as last resort.
 
 ### Blue cables: The [OptiTrack](OptiTrack/Readme.md) camera network
 
@@ -18,10 +20,9 @@ The [OptiTrack](OptiTrack/Readme.md) cameras are connected to the Netgear PoE ([
 
 | IP address | Fixed/DHCP | Description |
 | --------- | ---------- | -------- |
-| `192.168.69.100` | `Fixed IP` | Old Etisalat-branded D-Link DIR-851 router. It just works as a DHCP server. |
-| `192.168.69.200` | `Fixed IP` | Linksys LGS352MPC POE Managed Switch |
+| `192.168.69.100` | `Static IP` | Old Etisalat-branded D-Link DIR-851 router. It just works as a DHCP server. |
+| `192.168.69.200` | `Static IP` | Linksys LGS352MPC POE Managed Switch |
 | `192.168.69.101 ... 199` | `DHCP Range` | The cameras use a custom proprietary protocol, they don't care about this anyway. |
-
 
 Note that the OptiTrack computer that runs Motive is connected to this network via a dedicated PCI-E network adapter.
 
@@ -29,26 +30,30 @@ Note that the OptiTrack computer that runs Motive is connected to this network v
 
 If you have an own device or anything that doesn't support IEEE 802.1X, you can connect to this network. The password for this network is not disclosed here, ask for it. There are certain things that have to be on a fixed IP. These are:
 
-| IP address | Fixed/DHCP | Description |
+| IP address | Static?/DHCP? | Description |
 | --------- | ---------- | -------- |
-| `192.168.42.1` | `Fix IP` | TP Link router. Power can be interrupted with the 'WIFI' switch. |
-| `192.168.42.2` | `Fix IP` | Optotrak Certus SCU on top of the truss. Turn it on with the 'SCU' switch. |
-| `192.168.42.3` | `Fix IP` | Portable Optotrak Certus SCU, if needed. Hopefully not. |
-| `192.168.42.4` | `Fix IP` | 2.5G Ethernet on `dzs-pici-nas`, this in the Enclave network. |
-| `192.168.42.5` | `Fix IP` | Motherboard's Ethernet socket on the OptiTrack computer. |
-| `192.168.42.6` | `Fix IP` | `Ethernet 1` of `Volciclab Server`. |
-| `192.168.42.7` | `Fix IP` | `Ethernet 1` of `Volciclab 1`. |
-| `192.168.42.8` | `Fix IP` | `Ethernet 1` of `Volciclab 2`. |
-| `192.168.42.9` | `Fix IP` | TP-Link SX3016F 10G managed switch |
-| `192.168.42.10` | `Fix IP` | Internal Ethernet connector of the main unit [of the UR3e robot](robot_server/Readme.md). |
-| `192.168.42.11` | `Fix IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-one` |
-| `192.168.42.12` | `Fix IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-two` |
-| `192.168.42.15` | `Fix IP` | `wls5` (wifi) on `zoltan-nyuad-desktop`. |
+| `192.168.42.1` | `Static IP` | TP Link router. |
+| `192.168.42.2` | `Static IP` | Optotrak Certus SCU on top of the truss. Turn it on manually, along with the cameras if you want to use it. Hopefully not. |
+| `192.168.42.3` | `Static IP` | Portable Optotrak Certus SCU, if needed. Hopefully not. |
+| `192.168.42.4` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `dzs-pici-nas`. This is for Google Drive sync for Zoltan. |
+| `192.168.42.5` | `Static IP` | Motherboard's Ethernet socket on the OptiTrack computer. |
+| `192.168.42.6` | `Static IP` | `Ethernet 1` of `Volciclab Server`. |
+| `192.168.42.7` | `Static IP` | `Ethernet 1` of `Volciclab 1`. |
+| `192.168.42.8` | `Static IP` | `Ethernet 1` of `Volciclab 2`. |
+| `192.168.42.9` | `Static IP` | TP-Link SX3016F 10G managed switch. |
+| `192.168.42.10` | `Static IP` | Internal Ethernet connector of the main unit [of the UR3e robot](robot_server/Readme.md). |
+| `192.168.42.11` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-one` The 200 Gbit/s link's static IP address is `192.168.43.11`. |
+| `192.168.42.12` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-two` The 200 Gbit/s link's static IP address is `192.168.43.12`. |
+| `192.168.42.15` | `Static IP` | `wls5` (wifi) on `zoltan-nyuad-desktop`. |
+| `192.168.42.16` | `Static IP` | `LAN2` port on NAS (also on volciclab-nas.local:9999), located on top of the truss. |
 | `192.168.42.50 ... 249` | `DHCP Range` | Configured DHCP range for literally every other device on the network. |
-| `192.168.42.123` | `DHCP Reserved` | Bambu 3D printer, when configured in LAN mode (which is 99.9% of the time). |
+| `192.168.42.123` | `DHCP Reserved` | Bambu 3D printer, when configured in LAN mode, plugged to a LAN port of the router. |
 | `192.168.42.132` | `DHCP Reserved` | Philips Hue Bridge. |
+| `192.168.42.207` | `DHCP Reserved` | 2.5G Ethernet port of `volciclab-nuc`. |
 
-Note that the `TL-SG1218MPE` switch is completely unmanaged, with factory settings.
+Note that the IP addresses seem arbitrary. They are not. As the lab grew organically, the IP addresses are kept static. So code that was written a long time ago (say 2018) will run today, if needed.
+
+Also note that the that the TP-Link SX3016F switch does not support old devices that are not capable of at least 1 Gbit/s. **Things that use less than 1GBase-T Ethernet must be connected via a desktop switch or plugged to a free LAN port of the router directly.**
 
 ### Gray cables: Uplink to ResNet or NYUAD
 
@@ -56,7 +61,7 @@ For the purpose of software development and firmware upgrades, the Volciclab net
 
 #### A note on networks
 
-Since there are disjoint networks, and some of the hosts are on fixed IP while others on DHCP, packet routing can be an issue. For example, when a request is sent to the robot, but the OS routes it to an other network, the connection cannot be made. For this reason, on Windows, the interfaces are prioritised: the interface metrics are not assigned automatically, they are manually set.
+Since there are disjoint networks, and some of the hosts are on fixed IP while others on DHCP, packet routing can be an issue. For this reason, there are no routes defined across network adapters in any system.
 
 ## Hardware (links to the appropriate sites)
 
