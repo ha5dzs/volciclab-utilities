@@ -4,9 +4,9 @@ This is a repository of all the internally-made scripts and applications for the
 
 ## The Volciclab Network Infrastructure
 
-When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why (NEED TO UPDATE THIS):
+When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why:
 
-![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure-february-2025.png "Now you probably see why I needed to write this all down!")
+![Now you probably see why I needed to write this all down!](img/volciclab_network_aug_2026.png "Now you probably see why I needed to write this all down!")
 
 All the local networks inside the lab are isolated from the outside world by default via the router's firewall. The camera network is connected to the Linksys 48-port POE switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check for labels on the hardware in the lab, or refer to the network map.
 
@@ -37,11 +37,11 @@ If you have an own device or anything that doesn't support IEEE 802.1X, you can 
 | `192.168.42.1` | `Static IP` | TP Link Archer BE900 router. |
 | `192.168.42.2` | `Static IP` | Optotrak Certus SCU on top of the truss. Turn it on manually, along with the cameras if you want to use it. Hopefully you'll never need this. |
 | `192.168.42.3` | `Static IP` | Portable Optotrak Certus SCU, if needed. Hopefully not. |
-| `192.168.42.4` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `dzs-pici-nas`. This is for Google Drive sync for Zoltan. |
+| `192.168.42.4` | `Static IP` | `![via WiFi]`, connected to `Volciclab-2.4G`: homebrew trigger box connected to OptiTrack eSync 2, for precision closed-loop control. |
 | `192.168.42.5` | `Static IP` | Motherboard's Ethernet socket on the OptiTrack computer. |
 | `192.168.42.6` | `Static IP` | `Ethernet 1` of `Volciclab Server`. |
 | `192.168.42.7` | `Static IP` | `Ethernet 1` of `Volciclab 1`. |
-| `192.168.42.8` | `Static IP` | `Ethernet 1` of `Volciclab 2`. |
+| `192.168.42.8` | `Static IP` | `Ethernet 1` of `Volciclab 2`, i.e. the 'decent' workstation. |
 | `192.168.42.9` | `Static IP` | TP-Link SX3016F 10G managed switch. |
 | `192.168.42.10` | `Static IP` | Internal Ethernet connector of the main unit [of the UR3e robot](robot_server/Readme.md). |
 | `192.168.42.11` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-one` The 200 Gbit/s link's static IP address is `192.168.43.11`. |
