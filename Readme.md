@@ -95,5 +95,15 @@ This is a collection of scripts for implementing an experiment using a stand-alo
 
 While there are cold-storage backups regularly made, this is a special regime that uses optical discs. May we never need this. These are neither incremental nor 'Towers of Hanoi' backups, they are just full backups that are to be taken yearly, ideally during the short time time when there is no data actively being collected.
 
-### Machine learning architecture
+### AI Inference at Volciclab
 
+We have LLM servers for isolated agentic coding and exploratory data analysis, and to a limited degree, we have image generation capability. As this field is rapidly changing, it's best to ask or explore what is the current latest & greatest. Note that not everything is or can run at the same time. But, in principle:
+
+| What service | Listens at: | Max GPU memory |
+| ------------ | ----------- | ------------ |
+| Ollama | http://192.168.42.8:11434 | 76 GB |
+| Lemonade | http://192.168.42.8:13305 | 76 GB |
+| Ollama | http://192.168.42.11:11434 | 128 GB |
+| Ollama | http://192.168.42.12:11434 | 128 GB |
+| vLLM | http://192.168.42.11:8000 | 256 GB (limited to 200 Gbit/s across nodes!) |
+| Lemonade | http://192.168.42.11:13305 | 128 GB |
