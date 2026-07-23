@@ -8,11 +8,13 @@ When you come visit the lab, the wiring on the truss may not look like much, but
 
 ![Now you probably see why I needed to write this all down!](img/volciclab-network-infrastructure-february-2025.png "Now you probably see why I needed to write this all down!")
 
-All the local networks inside the lab are isolated from the outside world by default via the router's firewall. The camera network is connected to the Linksys 48-port switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check for labels on the hardware in the lab, or refer to the network map.
+All the local networks inside the lab are isolated from the outside world by default via the router's firewall. The camera network is connected to the Linksys 48-port POE switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check for labels on the hardware in the lab, or refer to the network map.
 
-If possible, due to the heavy wifi use on campus, prioritise connecting to `Volciclab-6G`, or `Volciclab-5G`. Only use `Volciclab-2.4G` when the conditions are dire or you are using some device that doesn't support anything else. For now, fancy things like WiFi 7's MLO features are disabled.
+If possible, due to the heavy wifi use on campus, prioritise connecting to `Volciclab-6G`, or `Volciclab-5G`. Only use `Volciclab-2.4G` when the conditions are dire or you are using some device that doesn't support anything else.
 
-Any device connected the the Volciclab network should prioritise 6 Ghz, then 5 Ghz, and only use 2.4 GHz as last resort.
+For now, fancy things like WiFi 7's MLO features are disabled. We also have the option to create a mesh infrastructure, in case the bandwidth of the lab network access is insufficient from the office area.
+
+Again, any device connected the the Volciclab network should prioritise 6 Ghz, then 5 Ghz, and **only use 2.4 GHz as last resort**.
 
 ### Blue cables: The [OptiTrack](OptiTrack/Readme.md) camera network
 
@@ -32,8 +34,8 @@ If you have an own device or anything that doesn't support IEEE 802.1X, you can 
 
 | IP address | Static?/DHCP? | Description |
 | --------- | ---------- | -------- |
-| `192.168.42.1` | `Static IP` | TP Link router. |
-| `192.168.42.2` | `Static IP` | Optotrak Certus SCU on top of the truss. Turn it on manually, along with the cameras if you want to use it. Hopefully not. |
+| `192.168.42.1` | `Static IP` | TP Link Archer BE900 router. |
+| `192.168.42.2` | `Static IP` | Optotrak Certus SCU on top of the truss. Turn it on manually, along with the cameras if you want to use it. Hopefully you'll never need this. |
 | `192.168.42.3` | `Static IP` | Portable Optotrak Certus SCU, if needed. Hopefully not. |
 | `192.168.42.4` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `dzs-pici-nas`. This is for Google Drive sync for Zoltan. |
 | `192.168.42.5` | `Static IP` | Motherboard's Ethernet socket on the OptiTrack computer. |
@@ -45,7 +47,7 @@ If you have an own device or anything that doesn't support IEEE 802.1X, you can 
 | `192.168.42.11` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-one` The 200 Gbit/s link's static IP address is `192.168.43.11`. |
 | `192.168.42.12` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-two` The 200 Gbit/s link's static IP address is `192.168.43.12`. |
 | `192.168.42.15` | `Static IP` | `wls5` (wifi) on `zoltan-nyuad-desktop`. |
-| `192.168.42.16` | `Static IP` | `LAN2` port on NAS (also on volciclab-nas.local:9999), located on top of the truss. |
+| `192.168.42.16` | `Static IP` | `LAN2` port on NAS (also on volciclab-nas.local:9999), located on top of the silver file server and AI inference rack. |
 | `192.168.42.50 ... 249` | `DHCP Range` | Configured DHCP range for literally every other device on the network. |
 | `192.168.42.123` | `DHCP Reserved` | Bambu 3D printer, when configured in LAN mode, plugged to a LAN port of the router. |
 | `192.168.42.132` | `DHCP Reserved` | Philips Hue Bridge. |
