@@ -97,7 +97,7 @@ While there are cold-storage backups regularly made, this is a special regime th
 
 ### AI Inference at Volciclab
 
-We have LLM servers for isolated agentic coding and exploratory data analysis, and to a limited degree, we have image generation capability. As this field is rapidly changing, it's best to ask or explore what is the current latest & greatest. Note that not everything is or can run at the same time. But, in principle:
+We have LLM servers for isolated agentic coding and exploratory data analysis, and to a limited degree, we have image generation capability. As this field is rapidly changing, it's best to ask or explore what is the current latest & greatest. Note that not everything is being, or can be run at the same time. But, in principle:
 
 | What service | Listens at: | Max GPU memory |
 | ------------ | ----------- | ------------ |
