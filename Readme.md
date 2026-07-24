@@ -8,7 +8,7 @@ When you come visit the lab, the wiring on the truss may not look like much, but
 
 ![Now you probably see why I needed to write this all down!](img/volciclab_network_aug_2026.png "Now you probably see why I needed to write this all down!")
 
-All the local networks inside the lab are isolated from the outside world by default via the router's firewall. The camera network is connected to the Linksys 48-port POE switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check for labels on the hardware in the lab, or refer to the network map.
+All the local networks inside the lab are isolated from the outside world by default via the router's firewall. The camera network is connected to the Linksys 48-port PoE switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check for labels on the hardware in the lab, or refer to the network map.
 
 If possible, due to the heavy wifi use on campus, prioritise connecting to `Volciclab-6G`, or `Volciclab-5G`. Only use `Volciclab-2.4G` when the conditions are dire or you are using some device that doesn't support anything else.
 
@@ -23,10 +23,10 @@ The [OptiTrack](OptiTrack/Readme.md) cameras are connected to the Netgear PoE ([
 | IP address | Fixed/DHCP | Description |
 | --------- | ---------- | -------- |
 | `192.168.69.100` | `Static IP` | Old Etisalat-branded D-Link DIR-851 router. It just works as a DHCP server. |
-| `192.168.69.200` | `Static IP` | Linksys LGS352MPC POE Managed Switch |
+| `192.168.69.200` | `Static IP` | Linksys LGS352MPC PoE Managed Switch |
 | `192.168.69.101 ... 199` | `DHCP Range` | The cameras use a custom proprietary protocol, they don't care about this anyway. |
 
-Note that the OptiTrack computer that runs Motive is connected to this network via a dedicated PCI-E network adapter.
+Note that the OptiTrack computer that runs Motive is connected to this network via a separate network adapter. The networks are NOT bridged, and there is no access configured between 192.168.42.x and 192.168.69.x.
 
 ### Black cables: The Volciclab internal network
 
