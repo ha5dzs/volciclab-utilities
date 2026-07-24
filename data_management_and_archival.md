@@ -1,4 +1,29 @@
-# The Volciclab [dar](http://dar.linux.free.fr/) archiving regime
+# Where does your data go? How do we make sure no data is ever lost?
+
+Let's separate data management to day-to-day use, redundant copies, cold storage, and archiving.
+
+## Everyday data access
+
+* In 99.9% of the cases, you'll only ever need to interact with Drive `X`, which is mounted from `volciclab-server`.
+As long as you work here, there will be a directory with your name on it, feel free to use it as you see fit. In total, Drive `X` has a space of 4 TB in total. If you need more space than that, then use Drive `W`, which is mounted from `volciclab-nas`.
+* If you need to look at old files (including collected data from people who no longer work here), or perhaps some documentation, these are stored on Drive `W` that is mounted from `volciclab-nas`. Note that the total storage available here is 16 TB.
+* For full-fat computer images, OS install ISOs and VM images, see Drive `V`, mounted from `volciclab-nas`.
+
+## Redundant copies and daily backups
+
+Pretty much every drive used for data storage (as in, NOT the system drives!) is duplicated and mirrored. In `volciclab-server`, the 4 TB NVMe SSDs are in [TODO: Hardware RAID 1 / Arranged in a ZFS mirror]. This is synced daily with to two 4 TB SATA SSDs in RAID 1, located in Bay 3 and Bay 4 in `volciclab-nas`. Additionally, daily non-destructive (as in, if you delete something, it will NOT be deleted) syncs are done to our NYUAD network shared drive.
+
+The 16 TB volume is comprised of two 16 TB Toshiba MD08 helium-filled hard drives, also in RAID 1. Note that hard drives are slower than SSDs, so this is really for occasional use - install files, OS images, documentation.
+
+### Fault management
+
+If any of the mirrored storage devices fail, at the utmost urgency, a replacement two drives must be obtained and additional backups must be made. The `volciclab-nas` will produce an audible alarm on drive failure. `volciclab-server` will not do this by default, but there will be traces in the logs and reduced performance. [TODO: see if the 9955HX EFI has any support for this or maybe write a script that throws an audible tantrum?]
+
+## Cold storage
+
+About once every six months (during summer when everyone is away, and between Christmas and New Year when everyone is away - note the pattern), an additional copy of the collected data (as in, NOT the OS images, install files or documentation) is being made to a single 8 TB external hard drive. This hard drive is in an external GPU enclosure and stored in the grey cupboard. Please do not place it to the bottom shelf, to make sure it survives if the lab gets flooded.
+
+## The Volciclab [dar](http://dar.linux.free.fr/) archiving regime
 
 May we never need to use this archive. Hopefully, this would be one of those 'create and forget about' things.
 
