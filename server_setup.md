@@ -9,7 +9,7 @@ In order to do these, you need to have at hand:
 * Understand concepts of Unix-like systems, such as:
   * What the kernel does
   * How hardware is accessed
-  * Users, groups, permissions, owners
+  * Users (including what `sudo` does), groups, permissions, owners
 * A working system with a sudo-capable account
  * IP address appropriately set up
 * Connection to the lab network and/or the Internet
@@ -82,7 +82,7 @@ If you installed some new drives, especially if you bought them online, always, 
   * `f3write ~/ssdtest && f3read ~/ssdtest`
   * (this can take hours, so periodically check the terminal, look for errors that may indicate that the drive is fake/faulty)
 
-## Setting up the zfs pool and volume and the shares
+## Setting up the zfs pool and the shares
 
 Anything storage-related is in `/mnt`. Such as:
 
@@ -254,10 +254,7 @@ lrwxrwxrwx  1 root root  13 Jul 30 16:44 nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA0
 lrwxrwxrwx  1 root root  13 Jul 30 16:44 nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA02141P_1 -> ../../nvme2n1
 ```
 
-So from above, one ID is: `/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA02133Y`, and the other one is `/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA02141P`. The Kingston one is the system SSd, you can see the
-
-
-
+So from above, one ID is: `/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA02133Y`, and the other one is `/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA02141P`. The Kingston one is the system SSD, you can see the partitions on it, we don't really need to care about it here.
 
 ```bash
 sudo zpool create -f zfs_pool mirror /dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA02133Y /dev/disk/by-id/nvme-Samsung_SSD_990_PRO_4TB_S7DPNJ0YA02141P
@@ -325,15 +322,34 @@ zfs_pool  mountpoint  /mnt/zfs_pool  local
 $
 ```
 
-Excellent.
+Excellent. Now let's create a directory within this pool, so we can refer to it: `sudo mkdir /mnt/zfs_pool/volciclab-storage`.
 
 For future reference, hopefully you'll never need this, but if a disk fails, you can use `zpool detach zfs_pool /dev/disk/by-id/<the id of the failed drive>` to remove the failed drive from the pool, and `zpool attach -f mypool /dev/disk/by-id/<the drive that survived> /dev/disk/by-id/<the new drive you added> attach`.
 
 ## Sharing the server's storage on the local network with `smbd`
 
-For simplicity, and because this is all working in a local network that is pretty much isolated from the outside world, we only have one user. Everyone just has their own directory to work in, and everything is accessible to everyone. This is because the share is defined for lab data, and not for private stuff.
+For simplicity, and because this is all working in a local network that is pretty much isolated from the outside world, we only have one user. Everyone just has their own directory to work in, and everything is accessible to everyone. This is because the share is defined for lab data, and not for private stuff. This means that we can be rather liberal with permissions, unlike in a multi-user set-up. In particular:
 
-Let's start by editing the main config file. We want the zfs pool that was defined above to be shared via samba, so Windows computers can use it.
+```bash
+sudo chmod -R 777 /mnt
+```
+
+...which will result in everybody being able to read, write and execute every file within `/mnt`
+
+```bash
+$ ls -al / |grep mnt
+drwxrwxrwx   4 root root       4096 Jul 30 18:43 mnt
+$ ls -al /mnt/zfs_pool
+total 14
+drwxrwxrwx 3 nobody nogroup    3 Jul 30 18:26 .
+drwxrwxrwx 4 root   root    4096 Jul 30 18:43 ..
+drwxrwxrwx 2 root   root       6 Jul 30 19:41 volciclab-storage
+$
+```
+
+So, we will share `/mnt/zfs_pool/volciclab-storage` on the network. Samba is working as a separate user, and has to read-write access to all the parent directories - `/mnt/zfs_pool`, and `/mnt` as well. If these permissions are not satisfied, then smbd will just block the user. These are difficult to trace, because it will not tell you directly why the permission was refused, you will have to change the loglevel for authentication and manually troubleshoot it.
+
+To set up this share, let's start by editing the main config file.
 
 ```bash
 sudo nanno /etc/samba/smb.conf
@@ -427,7 +443,7 @@ Press enter to see a dump of your service definitions
 $
 ```
 
-Once you are done with this, you can check access with `smbclient`. Note that this won't work when connecting via `localhost` (using the loopback network interface locally) for the address, because, in `/etc/samba/smb.conf`, explicitly the 10 Gbit/s network adapter was specified. This is intentional, so nobody will be able to connect to it from the NYUAD network using the other network interface.
+Once you are done with this, you can check access with `smbclient`. Note that this shouldn't work when connecting via `localhost` (using the loopback network interface locally) for the address, because, in `/etc/samba/smb.conf`, explicitly the 10 Gbit/s network adapter was specified. This is intentional, so nobody will be able to connect to it from the NYUAD network using the other network interface.
 
 ```bash
 $ smbclient -L localhost -U volciclab
@@ -442,7 +458,7 @@ Password for [WORKGROUP\volciclab]:
 SMB1 disabled -- no workgroup available
 ```
 
-Make sure that usere `volciclab` is allowed to do all things samba. IMPORTANT: never EVER EVER leave the `a` out from `-aG`. It stands for APPEND. IF you leave it out, the user will be made to be member of only one group. If that user is the only user and is you, you essentially locked yourself out of the system.
+Make sure that usere `volciclab` is allowed to do all things samba. IMPORTANT: never EVER EVER leave the `a` out from `-aG`. It stands for APPEND. If you leave it out, the user will be made to be member of only one group. If that user is the only user and is you, you essentially locked yourself out of the system.
 
 ```bash
 $ sudo usermod -aG sambashare volciclab
@@ -458,4 +474,136 @@ Added user volciclab.
 $
 ```
 
-You should be able to mount the share from pretty much any device from the network.
+You should be able to mount the share from pretty much any device (tested on Windows, Linux, Mac, Android - haven't tested on exotic things like, Haiku OS, Palm OS, or DOS) from the network.
+
+## Mounting external samba (Windows) shares at boot time
+
+From Linux, you can mount a samba share in many ways. When using a GUI in a typical user setting, the convenient approach is to use application-layer-specific solutions, such as [gvfs](https://github.com/GNOME/gvfs) or [FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace). These are great for a user, but for stability and persistence, we will need some lower-level solutions. Since we installed the package `cifs-utils`, we can mount a samba share with `mount`.
+
+Let's create the directory within `/mnt` that we will mount the NAS to:
+
+```bash
+$ sudo mkdir /mnt/volciclab-nas-16tb
+$
+```
+
+To mount it low-level, this is the command we have to issue:
+
+```bash
+$ sudo mount -t cifs -o username=volciclab,uid=$(id -u),gid=$(id -g) //192.168.42.16/volciclab-nas-16tb /mnt/volciclab-nas-16tb
+Password for volciclab@//192.168.42.16/volciclab-nas-16tb:
+$
+```
+
+You can specify the `password=<Your Super Secret Password That You Should Never Ever Write In Plain Text>` argument as well, but this will expose the password in the terminal `history` file, and is really not a good practice. Here, we know it doesn't really matter, but the same method will be used for not only `volciclab-nas`, but for NYUAD's network share as well, and the security policies in the NYU's internal multi-campus network are far more strict than an isolated network in a single lab. So while I am not going to share those details, changing the server address, share name and having a separate credential file is all that are different, the method is the same.
+
+Linux uses `/etc/fstab` for persistent file system mounts, and this is how we start with straight after installation:
+
+```bash
+ cat /etc/fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/nvme2n1p1 during curtin installation
+/dev/disk/by-uuid/c3bc18d3-37bd-4ef8-8269-8225847539cc / ext4 defaults 0 1
+# /boot/efi was on /dev/nvme2n1p2 during curtin installation
+/dev/disk/by-uuid/2497-B82B /boot/efi vfat defaults 0 1
+/swap.img	none	swap	sw	0	0
+$
+```
+
+And just to verify, this is what we want to mount:
+
+* Address: `//192.168.42.16/volciclab-nas-16tb`
+* User: `volciclab`
+* Password: `meow` (not the real password, but you get the idea)
+* Additonal options (most of them are stock, see `man mount.cifs` if you want to dive into this):
+  * `rw`
+  mount read=write
+  * `vers=3.1.1`
+  3.0 is supported since Windws 8 and Windows Server 2012, and supports file change notifications. 2.x is for Windows Vista and Windows Server 2008, supporting a bit better user and permission management. SMB1 should not be used, unless you plan to connect to windows shares up to Windows XP.
+  * `cache=strict`
+  Try to be as orthodox with the SMB protocol as possible. Shouldn't matter with newer systems.
+  * `uid=1000,forceuid`
+  `uid` of user `volciclab` on the system you are working on.
+  * `gid=1000,forcegid`
+  `gid` of user `volciclab` on the system you are working on.
+  * `file_mode=755`
+  Default permission mask for every file created. Anyone can read and write into them, but only its owner (`volciclab`) can execute them.
+  * `dir_mode=755`
+  Default permission mask for every directory created. If this is not permissive enough, you won't get access to anything within the directory, even if you set the permissions of the directory's contents to be super relaxed.
+  * `_netdev`
+  Only attempt to mount when there is network.
+  * `nofail`
+  If it fails to mount, then continue booting.
+  *`x-systemd.mount-timeout=30s`
+  If it is not mounted in 30 seconds, then just continue booting.
+  * `credentials=/etc/samba/credentials/volciclab-nas-16tb`
+  The username and password is stored in this file.
+
+### Creating the credential file and hardening it
+
+The credential file is just a text file in a particular location. In this implementation, it stores the password unencrypted. So, we create the directory, and then create the file with IO redirection, then set the permissions so that only `root` can read it.
+
+```bash
+$ sudo mkdir /etc/samba/credentials
+$ sudo nano /etc/samba/credentials/volciclab-nas-16tb
+```
+
+In the text editor, add the following lines:
+
+```conf
+username=volciclab
+password=meow
+```
+
+Then, set the permissions so that the file cannot be read by anyone but `root`, and cannot be written to either
+
+```bash
+$ sudo chmod -R 600 /etc/samba/credentials
+```
+
+Verify: as a mere mortal, you cannot read the file:
+
+```bash
+cat /etc/samba/credentials/volciclab-nas-16tb
+cat /etc/samba/credentials/volciclab-nas-16tb: Permission denied
+```
+
+...but, when elevating yourself above the plane where mere mortals exist:
+
+```bash
+$ sudo cat /etc/samba/credentials/volciclab-nas-16tb
+username=volciclab
+password=meow
+$
+```
+
+Excellent. Now we can update `/etc/fstab`, with `sudo nano /etc/fstab`, and add the following line:
+
+```fstab
+# This is the local NAS.
+//192.168.42.16/volciclab-nas-16tb  /mnt/volciclab-nas-16tb  cifs  rw,credentials=/etc/samba/credentials/volciclab-nas-16tb,uid=1000,gid=1000,file_mode=0775,dir_mode=0775,vers=3.1.1,_netdev,nofail,x-systemd.mount-timeout=30s  0  0
+```
+
+After making sure that you don't have the file share already mounted, You can not test this with `sudo mount -a` and then `sudo systemctl daemon-reload`. If something goes wrong, there will be error messages. Afterwards, reboot the server, and see if the mounts are OK.
+
+Verify operation: Check whether the mount is active, create a file with some text in it, and then read it back:
+
+```bash
+$ mount | grep 192.168.42.16
+//192.168.42.16/volciclab-nas-16tb on /mnt/volciclab-nas-16tb type cifs (rw,relatime,vers=3.1.1,cache=strict,upcall_target=app,username=volciclab,uid=1000,forceuid,gid=1000,forcegid,addr=192.168.42.16,file_mode=0775,dir_mode=0775,soft,nounix,serverino,mapposix,reparse=nfs,nativesocket,symlink=native,rsize=4194304,wsize=4194304,bsize=1048576,echo_interval=60,actimeo=1,closetimeo=1,_netdev,x-systemd.mount-timeout=30s)
+$
+$ echo -e "First line\nSecond line" > /mnt/volciclab-nas-16tb/test.txt
+$
+$ cat /mnt/volciclab-nas-16tb/test.txt
+First line
+Second line
+$
+```
+
+Repeat this process for all the network shares that want to have mounted on the server - alternative drives, NYUAD network share, etc.

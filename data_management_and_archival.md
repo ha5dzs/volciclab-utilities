@@ -11,9 +11,9 @@ As long as you work here, there will be a directory with your name on it, feel f
 
 ## Redundant copies and daily backups
 
-Pretty much every drive used for data storage (as in, NOT the system drives!) is duplicated and mirrored. In `volciclab-server`, the 4 TB NVMe SSDs are in [TODO: Hardware RAID 1 / Arranged in a ZFS mirror]. This is synced daily with to two 4 TB SATA SSDs in RAID 1, located in Bay 3 and Bay 4 in `volciclab-nas`. Additionally, daily non-destructive (as in, if you delete something, it will NOT be deleted) syncs are done to our NYUAD network shared drive.
+Pretty much every drive used for data storage (as in, NOT the system drives!) is duplicated and mirrored. In `volciclab-server`, the 4 TB NVMe SSDs are arranged in a mirrored ZFS pool. This is synced daily with to two 4 TB SATA SSDs in RAID 1, located in Bay 3 and Bay 4 in `volciclab-nas`. Additionally, daily non-destructive (as in, if you delete something, it will NOT be deleted) syncs are done to our NYUAD network shared drive.
 
-The 16 TB volume is comprised of two 16 TB Toshiba MD08 helium-filled hard drives, also in RAID 1. Note that hard drives are slower than SSDs, so this is really for occasional use - install files, OS images, documentation.
+The 16 TB volume is comprised of two 16 TB Toshiba MD08 helium-filled hard drives, also in RAID 1. Note that hard drives are slower than SSDs, so this is really for occasional use - old stuff we don't use daily, install files, OS images, documentation.
 
 ### Fault management
 
