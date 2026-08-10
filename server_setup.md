@@ -10,14 +10,17 @@ In order to do these, you need to have at hand:
   * What the kernel does
   * How hardware is accessed
   * Users (including what `sudo` does), groups, permissions, owners
+  * Shell commands, including:
+    * io redirection: `echo -e "haha" > test.txt`
+    * expression filtering: `cat test.txt | grep haha`
 * A working system with a sudo-capable account
- * IP address appropriately set up
+ * IP address appropriately set up (either via `netplan` or `nm*`)
 * Connection to the lab network and/or the Internet
 * Connection to the NYUAD network
 * Time an understanding, especially considering that:
-A lot of open-source software is being used, config files and terminology changes, and sometimes progress is with negative magnitude. This is written in July 2026 as I set it up, so at least we have a known-good configuration.
+A lot of open-source software is being used, config files and terminology changes, and sometimes progress is with negative magnitude. This is written in July 2026 as I set it up, so at least we have a known-good configuration. This does not guarantee that the process described here will be error-free in the future.
 
-## Open a terminal and install the basics:
+## Open a terminal and install the basics
 
 Let's say we have a fresh install. This won't hurt.
 
@@ -32,7 +35,7 @@ sudo apt-get upgrade
 Now, install some software. This is going to take a while.
 
 ```bash
-sudo apt-get install mc f3 gparted smartmontools openssh-server apache2 zfs-dkms zfsutils-linux samba apt-file cifs-utils smbclient libpam-winbind
+sudo apt-get install mc f3 gparted smartmontools openssh-server apache2 php-common libapache2-mod-php zfs-dkms zfsutils-linux samba apt-file cifs-utils smbclient libpam-winbind
 ```
 
 During this installation, you were probably prompted about the licence differences between GNU GPL and whatever zfsutils use, and you saw that a new kernel image has been generated. Now it's a good time to reboot.
