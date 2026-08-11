@@ -10,15 +10,15 @@ In order to do these, you need to have at hand:
   * What the kernel does
   * How hardware is accessed
   * Users (including what `sudo` does), groups, permissions, owners
-  * Shell commands, including:
+  * Shell commands and tricks, including:
     * io redirection: `echo -e "haha" > test.txt`
     * expression filtering: `cat test.txt | grep haha`
 * A working system with a sudo-capable account
- * IP address appropriately set up (either via `netplan` or `nm*`)
+ * IP address appropriately set up (either via `netplan` or `nm*`) on all network interfaces
 * Connection to the lab network and/or the Internet
 * Connection to the NYUAD network
 * Time an understanding, especially considering that:
-A lot of open-source software is being used, config files and terminology changes, and sometimes progress is with negative magnitude. This is written in July 2026 as I set it up, so at least we have a known-good configuration. This does not guarantee that the process described here will be error-free in the future.
+A lot of open-source software is being used, config files and terminology changes, and sometimes progress is with negative magnitude. This is written in July-August 2026 as I set it up, so at least we have a known-good configuration. This does not guarantee that the process described here will be error-free in the future.
 
 ## Open a terminal and install the basics
 
@@ -329,6 +329,54 @@ Excellent. Now let's create a directory within this pool, so we can refer to it:
 
 For future reference, hopefully you'll never need this, but if a disk fails, you can use `zpool detach zfs_pool /dev/disk/by-id/<the id of the failed drive>` to remove the failed drive from the pool, and `zpool attach -f mypool /dev/disk/by-id/<the drive that survived> /dev/disk/by-id/<the new drive you added> attach`.
 
+## Setting up networking
+
+The actual network interfaces might differ. During installation, only the lab network connection should be live. After installation, the NYUAD network connection should be set up. This can be done in the GUI with `networkmanager`, or with `nmtui` or `nmcli`, depending on taste.
+
+* `/dev/enp5s0f0np0` is a 10G SFP Ethernet interface, connected to the lab network. Its static IP is `192.168.42.6`, default gateway is `192.168.42.1`, and the connection metric is 100.
+* `/dev/enp3s0` is a 2.5G Ethernet interface, connected to the NYUAD network. It receives DHCP, and the default metric is 101.
+
+This means, that pretty much all traffic is being routed to the gateway of the lab network. But, we have a file server set up on the NYUAD network, so NYUAD-specific traffic should be routed to `enp3s0` instead.
+
+**IMPORTANT:** for security reasons, the NYUAD-specific hostnames and IP addresses below are _NOT real_ - but if you know what to set up (and if you have to set this up, you should be in contact with NYUAD IT anyway), the following will be easy to adapt. So, for argument's sake, let's assume that:
+
+* The DHCP gives a `10.502.32.165` ip address, with a netmask of `/23` (`255.255.254.0`), with the gateway being `10.502.32.1`.
+* The NYUAD server `zoltan-is-awesome.abudhabi.nyu.edu` resolves to a number of IP addresses in a different subnet, let's say `10.510.46.200`, `10.510.46.201` or `10.510.46.202`
+* As the default route is towards the lab network, pinging the NYUAD server will return 100% packet loss, understandably.
+* From NYUAD IT, we know that NYUAD network IP address space is: `10.500.0.0/13`, so the netmask is `255.248.0.0`.
+
+So, temporarily, let's set up a route:
+
+```bash
+sudo ip route add 10.500.0.0/13 via 10.502.32.1 dev enp3s0
+```
+
+...and now you should able to ping `zoltan-is-awesome.abudhabi.nyu.edu`, _or_ at least one of its ip addresses, let's say `10.510.46.201`. You could even try mounting a samba share.
+
+But, this is not permament, so the defined route will be lost upon reboot. While `networkmanager` takes care of convenient networking options in this Ubuntu-based installation. Perhaps the easiest and most-terminal friendly is to set up the routing via `sudo nmtui`. Select `Edit a connection` > `NYUAD Network` > `Edit` > go to `IPv4 CONFIGURATION` and select `<Show>`, then to go `Routing` and select `<Edit...>`, then select `<Add..>`.
+
+A dialogue box pops up, and enter the following data (with the _real_ IP addresses of course...):
+
+| Destination/prefix | Next Hop | Metric
+| ------------- | --------- | ------ |
+| `10.500.0.0/13` | `10.502.32.1` | `99` |
+
+Note that the connection metric is 99, so it will prioritise this connection for anything NYUAD network traffic, and will use the default connection, _whatever that may be_ for anything else.
+
+Once done, then Press `Ok`. Make sure `Never use this network for default route` is ticked in, select `OK`, then `back`, and then `Quit`. Check if the routes are persistent after a reboot.
+
+After reboot, you should see this:
+
+```bash
+$ sudo ip route
+default via 192.168.42.1 dev enp5s0f0np0 proto static metric 100
+10.500.0.0/13 via 10.502.32.1 dev enp3s0 proto static metric 99
+10.502.32.165/23 dev enp3s0 proto kernel scope link src 10.502.32.1 metric 101
+192.168.42.0/24 dev enp5s0f0np0 proto kernel scope link src 192.168.42.6 metric 100
+```
+
+...and by now, `traceroute zoltan-is-awesome.abudhabi.nyu.edu` should work. Pinging should work when the IP address of the server is being used.
+
 ## Sharing the server's storage on the local network with `smbd`
 
 For simplicity, and because this is all working in a local network that is pretty much isolated from the outside world, we only have one user. Everyone just has their own directory to work in, and everything is accessible to everyone. This is because the share is defined for lab data, and not for private stuff. This means that we can be rather liberal with permissions, unlike in a multi-user set-up. In particular:
@@ -364,6 +412,7 @@ For reference, the 10G Base-T SFP Ethernet transceiver is for the local network,
 In particular, in `/etc/samba/smb.conf`, the modified entries are:
 
 ```conf
+workgroup = AD
 server string = Volciclab Linux Server
 interfaces = 192.168.42.0/24 enp5s0f0np0
 bind interfaces only = yes
@@ -398,6 +447,8 @@ bind interfaces only = yes
     directory mask = 0755
 
 ```
+
+Note that the workgroup is changed to `AD`.
 
 When editing is finished, then:
 
@@ -539,11 +590,15 @@ And just to verify, this is what we want to mount:
   Default permission mask for every file created. Anyone can read and write into them, but only its owner (`volciclab`) can execute them.
   * `dir_mode=755`
   Default permission mask for every directory created. If this is not permissive enough, you won't get access to anything within the directory, even if you set the permissions of the directory's contents to be super relaxed.
+  * [optional, see below] `domain=AD`
+  This is for a quirk with for the NYUAD file share
   * `_netdev`
   Only attempt to mount when there is network.
   * `nofail`
   If it fails to mount, then continue booting.
-  *`x-systemd.mount-timeout=30s`
+  * [optional, see below] `x-systemd.after=network-online.target`
+  Only attempt mounting it, when the network is and the target host are both online (optional, see below)
+  * `x-systemd.mount-timeout=30s`
   If it is not mounted in 30 seconds, then just continue booting.
   * `credentials=/etc/samba/credentials/volciclab-nas-16tb`
   The username and password is stored in this file.
@@ -609,4 +664,54 @@ Second line
 $
 ```
 
-Repeat this process for all the network shares that want to have mounted on the server - alternative drives, NYUAD network share, etc.
+Repeat this process for all the network shares that want to have mounted on the server
+
+### Mounting file shares on the NYUAD networks
+
+**Make sure that you actually have access to the NYUAD network, and can ping/traceroute addresses in it.** There is no point in continuing without properly configured NYUAD network access.
+
+tl;dr: You must see a line something like this when `$ ip route` (but, of course, with _real_ NYUAD internal IP addresses):
+
+```bash
+10.500.0.0/13 via 10.502.32.1 dev enp3s0 proto static metric 99
+```
+
+Let's say NYUAD IT created a file share for the lab on their server, with the following details:
+
+* Address: `zoltan-is-awesome.abudhabi.nyu.edu/volciclab` which resolves to `10.510.46.200`
+* The user name of the _local service account_ they gave you: `AD\your_fancy_username`, and you set up the password accordingly
+* You successfully tested these details on a known-good Windows system
+* On Linux, you:
+  * Changed the workgroup to AD in `/etc/samba/smb.conf`
+  * Successfully tested access with: `smbclient -U username -L zoltan-is-awesome.abudhabi.nyu.edu`
+
+I am not sure if this is a cifs implementation thing, but this `AD\` in front of the user name is a apparently _workgroup_, from the SMB1 protocol. But we are using SMB 3.1.1 where workgroups are no longer a thing? The domain of the NYUAD network is `nyu.edu`.
+
+In order to mount it, at least, in August 2026, as a workaround, this preamble must be stripped and specified as a mounting option. Let's say, create the credential file in `/etc/samba/credentials/nyuad-file-share`, with the following info:
+
+```
+username=your_fancy_username
+password=Your_very_secure_password_also_ami_tobb_nyelven_is_tartalmaz_szavakat_ye_vala_dictionary_me_nehi_he_ncc_64923@@@@&&&#!
+```
+
+So, to mount it, in say `/mnt/nyuad-file-share`, then:
+
+```bash
+sudo mount -t cifs -o rw,credentials=/etc/samba/credentials/nyuad-file-share,uid=1000,forceuid,gid=1000,forcegid,vers=3.1.1,workgroup=AD //zoltan-is-awesome.abudhabi.nyu.edu /mnt/nyuad-file-share
+```
+
+...but the same in `/etc/fstab` has to be with `domain=AD`, otherwise mounting fails with unknown error:
+
+```fstab
+//zoltan-is-awesome.abudhabi.nyu.edu/volciclab  /mnt/nyuad-file-share  cifs  rw,credentials=/etc/samba/credentials/nyuad-file-share,uid=1000,gid=1000,file_mode=0775,dir_mode=0775,vers=3.1.1,domain=AD,_netdev,nofail,x-systemd.after=network-online.target,x-systemd.mount-timeout=30s  0  0
+```
+
+Note that there is an extra option, `x-systemd.after=network-online.target`, which makes sure that mounting is only attempted once the network is online. In the LAN, this is not an issue, because the hosts are quite literally next to each other and respond within a millisecond. On a campus network where any randomly picked server could be on three different continents, is a little different matter.
+
+Verify that it works after a `sudo reboot` with `mount`.
+
+## Syncing, and scheduling thereof
+
+## Web server
+
+This is clearly optional, but this is great for testing access and I found an earlier, much dumber version of this [really simple speedtest code](https://github.com/librespeed/speedtest) to test connection speed. So might as well, right?
