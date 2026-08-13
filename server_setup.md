@@ -35,7 +35,7 @@ sudo apt-get upgrade
 Now, install some software. This is going to take a while.
 
 ```bash
-sudo apt-get install mc f3 gparted smartmontools openssh-server apache2 php-common libapache2-mod-php zfs-dkms zfsutils-linux samba apt-file cifs-utils smbclient libpam-winbind
+sudo apt-get install mc f3 gparted smartmontools openssh-server apache2 php-common libapache2-mod-php zfs-dkms zfsutils-linux samba apt-file cifs-utils smbclient libpam-winbind iperf3
 ```
 
 During this installation, you were probably prompted about the licence differences between GNU GPL and whatever zfsutils use, and you saw that a new kernel image has been generated. Now it's a good time to reboot.
@@ -377,6 +377,46 @@ default via 192.168.42.1 dev enp5s0f0np0 proto static metric 100
 
 ...and by now, `traceroute zoltan-is-awesome.abudhabi.nyu.edu` should work. Pinging should work when the IP address of the server is being used.
 
+### Testing performance
+
+The server runs `iperf3` as a daemon by default. You can test connection bandwidth between the server and pretty much anything using the following command:
+
+```bash
+$ iperf3 -c 192.168.42.6 -t 20 -i 1
+Connecting to host 192.168.42.6, port 5201
+[  5] local 192.168.42.79 port 51464 connected to 192.168.42.6 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  21.2 MBytes   178 Mbits/sec    0    921 KBytes
+[  5]   1.00-2.00   sec  20.4 MBytes   171 Mbits/sec    0   1.42 MBytes
+[  5]   2.00-3.00   sec  17.2 MBytes   145 Mbits/sec    0   1.42 MBytes
+[  5]   3.00-4.00   sec  25.6 MBytes   215 Mbits/sec    0   1.43 MBytes
+[  5]   4.00-5.00   sec  23.8 MBytes   199 Mbits/sec    0   1.43 MBytes
+[  5]   5.00-6.00   sec  23.9 MBytes   200 Mbits/sec    0   1.44 MBytes
+[  5]   6.00-7.00   sec  22.4 MBytes   188 Mbits/sec    0   1.48 MBytes
+[  5]   7.00-8.00   sec  23.8 MBytes   199 Mbits/sec    0   1.55 MBytes
+[  5]   8.00-9.00   sec  22.5 MBytes   189 Mbits/sec    0   1.55 MBytes
+[  5]   9.00-10.00  sec  24.2 MBytes   203 Mbits/sec    0   1.66 MBytes
+[  5]  10.00-11.00  sec  24.4 MBytes   204 Mbits/sec    0   1.83 MBytes
+[  5]  11.00-12.00  sec  24.2 MBytes   204 Mbits/sec    0   1.96 MBytes
+[  5]  12.00-13.00  sec  23.4 MBytes   196 Mbits/sec    0   2.00 MBytes
+[  5]  13.00-14.00  sec  22.8 MBytes   191 Mbits/sec    0   2.28 MBytes
+[  5]  14.00-15.00  sec  23.1 MBytes   194 Mbits/sec    0   2.46 MBytes
+[  5]  15.00-16.00  sec  22.0 MBytes   185 Mbits/sec    0   2.71 MBytes
+[  5]  16.00-17.00  sec  23.0 MBytes   193 Mbits/sec    0   2.71 MBytes
+[  5]  17.00-18.00  sec  22.8 MBytes   191 Mbits/sec    0   2.71 MBytes
+[  5]  18.00-19.00  sec  23.8 MBytes   199 Mbits/sec    0   2.71 MBytes
+[  5]  19.00-20.00  sec  23.9 MBytes   200 Mbits/sec    0   2.71 MBytes
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-20.00  sec   460 MBytes   193 Mbits/sec    0            sender
+[  5]   0.00-20.04  sec   458 MBytes   192 Mbits/sec                  receiver
+
+iperf Done.
+```
+
+For application-layer test, set up the webserver, and use the html5-based speedtest.
+
+
 ## Sharing the server's storage on the local network with `smbd`
 
 For simplicity, and because this is all working in a local network that is pretty much isolated from the outside world, we only have one user. Everyone just has their own directory to work in, and everything is accessible to everyone. This is because the share is defined for lab data, and not for private stuff. This means that we can be rather liberal with permissions, unlike in a multi-user set-up. In particular:
@@ -714,4 +754,87 @@ Verify that it works after a `sudo reboot` with `mount`.
 
 ## Web server
 
-This is clearly optional, but this is great for testing access and I found an earlier, much dumber version of this [really simple speedtest code](https://github.com/librespeed/speedtest) to test connection speed. So might as well, right?
+This is clearly optional, but this is great for testing access and I found an earlier, much dumber version of this [really simple speedtest code](https://github.com/librespeed/speedtest) to test connection speed.
+
+The website is in `.../volciclab-storage/website`, with a simple `index.html`, and the `speedtest` directory. We need php to work as well. No other fancy stuff (nginx, sql, or anything else) is required.
+
+So, let's see if we have php enabled:
+
+```bash
+$ sudo apache2ctl -M | grep php
+AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 10.224.44.125. Set the 'ServerName' directive globally to suppress this message
+ php_module (shared)
+```
+
+Excellent, we are good to go. Now let's make a backup of the untainted config file with `sudo cp /etc/apache2/apache2.conf /etc/apache2/apache2.conf-vanilla`, and then edit the web server's main config file with `sudo nano /etc/apache2/apache2.conf`. This is a big file, so I just include the changes here:
+
+```conf
+#<Directory />
+#       Options FollowSymLinks
+#       AllowOverride None
+#       Require all denied
+#</Directory>
+
+#<Directory /usr/share>
+#       AllowOverride None
+#       Require all granted
+#</Directory>
+
+#<Directory /var/www/>
+#       Options Indexes FollowSymLinks
+#       AllowOverride None
+#       Require all granted
+#</Directory>
+
+<Directory /mnt/zfs_pool/volciclab-storage/website>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+</Directory>
+
+#<Directory /srv/>
+#       Options Indexes FollowSymLinks
+#       AllowOverride None
+#       Require all granted
+#</Directory>
+```
+
+Now, create a backup from the site-specific config file too with: `sudo cp /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf-vanilla`, and then edit it with: `sudo nano /etc/apache2/sites-enabled/000-default.conf`.
+
+Change the config file to:
+
+```conf
+<VirtualHost *:80>
+	# The ServerName directive sets the request scheme, hostname and port that
+	# the server uses to identify itself. This is used when creating
+	# redirection URLs. In the context of virtual hosts, the ServerName
+	# specifies what hostname must appear in the request's Host: header to
+	# match this virtual host. For the default virtual host (this file) this
+	# value is not decisive as it is used as a last resort host regardless.
+	# However, you must set it for any further virtual host explicitly.
+	ServerName volciclab-server.local
+
+	ServerAdmin uristen@menny.hu
+	DocumentRoot /mnt/zfs_pool/volciclab-storage/website
+
+	# Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+	# error, crit, alert, emerg.
+	# It is also possible to configure the loglevel for particular
+	# modules, e.g.
+	#LogLevel info ssl:warn
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+	# For most configuration files from conf-available/, which are
+	# enabled or disabled at a global level, it is possible to
+	# include a line for only one particular virtual host. For example the
+	# following line enables the CGI configuration for this host only
+	# after it has been globally disabled with "a2disconf".
+	#Include conf-available/serve-cgi-bin.conf
+</VirtualHost>
+```
+
+Restart apache2 with `sudo service apache2 restart`, and if you have a valid `index.html` in `/mnt/zfs_pool/volciclab-storage/website/`, then the web server should load it when you type [http://192.168.42.6](http://192.168.42.6) in your browser.
+
+Again, this set-up is very simple, and this is not exposed to the Internet, so it will only be accessible from within the NYUAD network (if you know the IP), and via the volciclab network. It's not super secure, there is no encryption or anything, but there isn't any data here to be shared either. Apache2 will not allow getting out of the document root directory, unless you specifically set it up. It's really to test connection and I have this rudimentary speedtest, because it works in the application layer, unlike iPerf.
