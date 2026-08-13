@@ -379,7 +379,7 @@ default via 192.168.42.1 dev enp5s0f0np0 proto static metric 100
 
 ### Testing performance
 
-The server runs `iperf3` as a daemon by default. You can test connection bandwidth between the server and pretty much anything using the following command:
+The server runs `iperf3` as a daemon by default. You can test connection bandwidth between the server and pretty much anything with `iperf3 -c 192.168.42.6 -t <number of test points> -i <display interval in seconds>`. For example, from a computer that is connected to the network via wifi and is in the other side of the building, this is what I am getting:
 
 ```bash
 $ iperf3 -c 192.168.42.6 -t 20 -i 1
@@ -412,9 +412,10 @@ Connecting to host 192.168.42.6, port 5201
 [  5]   0.00-20.04  sec   458 MBytes   192 Mbits/sec                  receiver
 
 iperf Done.
+$
 ```
 
-For application-layer test, set up the webserver, and use the html5-based speedtest.
+For application-layer test, set up the webserver, and use the html5-based speedtest. It will show slightly slower speeds, if your computer's processing power is limited or are using a resource-hungry browser.
 
 
 ## Sharing the server's storage on the local network with `smbd`
