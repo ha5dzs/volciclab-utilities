@@ -100,6 +100,16 @@ Return values are (in order):
 
 ***
 
+## WARNING about how you stream from OptiTrack to Matlab **READ THIS SECTION!!!**
+
+tl;dr: `volciclab_optitrack_streamer` is not included here, because  will **NOT** do anything unless you [start a separate streaming server](https://github.com/ha5dzs/optitrack-motive-data-streamer/) that was written to interact with it.
+
+Note that **this** _stock_ NatNet streaming client is not the one [we normally use](https://github.com/ha5dzs/optitrack-motive-data-streamer/). There is a known Motive GUI-related bug that randomly shuffles the rigid body headers and the actual data when sending over the network, and it is not guaranteed to be fixed in `NatNetLib.dll`. This is why we have what is now known as the [Streaming server thingy](https://github.com/ha5dzs/optitrack-motive-data-streamer) on the OptiTrack computer, where this issue was fixed by added sanity checks in every frame streamed. As a bonus, in addition to Matlab using [the unified `volciclab_optitrack_streamer.m` to reduce complexity](https://raw.githubusercontent.com/ha5dzs/optitrack-motive-data-streamer/refs/heads/main/examples/Matlab/volciclab_optitrack_streamer.m), you can stream into pretty much any device available. The streaming server is a [separate repository](https://github.com/ha5dzs/optitrack-motive-data-streamer/), with examples to some platforms. It is using a simple plain text protocol, and it even can be parsed on Palm OS.
+
+***
+
+If you STILL want to use the stock NatNet-based streamer, proceed with caution, but you have been warned:
+
 ### `volciclab_optitrack_get_rigid_body_data(natnet_object, rigid_body_names)` or
 
 ### `volciclab_optitrack_get_rigid_body_data(natnet_object, rigid_body_ids)`
