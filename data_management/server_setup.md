@@ -6,7 +6,7 @@ Linux is being used here, some sort of a Debian-flavour. I chose xubuntu for its
 
 In order to do these, you need to have at hand:
 
-* Understand concepts of Unix-like systems, such as:
+* The understanding of concepts of Unix-like systems, such as:
   * What the kernel does
   * How hardware is accessed
   * Users (including what `sudo` does), groups, permissions, owners
@@ -35,7 +35,7 @@ sudo apt-get upgrade
 Now, install some software. This is going to take a while.
 
 ```bash
-sudo apt-get install mc f3 gparted smartmontools openssh-server apache2 php-common libapache2-mod-php zfs-dkms zfsutils-linux samba apt-file cifs-utils smbclient libpam-winbind iperf3
+sudo apt-get install mc f3 gparted smartmontools openssh-server apache2 php-common libapache2-mod-php zfs-dkms zfsutils-linux samba apt-file cifs-utils smbclient libpam-winbind iperf3 rsync
 ```
 
 During this installation, you were probably prompted about the licence differences between GNU GPL and whatever zfsutils use, and you saw that a new kernel image has been generated. Now it's a good time to reboot.
@@ -91,7 +91,7 @@ Anything storage-related is in `/mnt`. Such as:
 
 | NAME | Description |
 | -------------- | ------------------- |
-| `/mnt/zfs_pool/zfs_volume` | The mirrored SSDs live here. |
+| `/mnt/zfs_pool/volciclab-storage` | The mirrored SSDs live here. |
 | `/mnt/nyuad_file_share` | Our shared drive on the NYUAD network. Only used for non-destructive nightly sync. |
 | `/mnt/nas_16_tb_volume` | The 2x16 TB hard drive on the NAS, for stuff that we don't need often. |
 | `/mnt/nas_4_tb_volume` | The 2x4 TB SATA SSD on the NAS, which is the clone of zfs_volume. Nothing else uses or accesses this. |
@@ -128,7 +128,7 @@ $
 
 If you don't get this, and you know what you are doing, then `sudo zpool destroy -f <the pool's name>`.
 
-Let's say we want to set up `/dev/nvme0n1` and `/dev/nvme2n1` in a mirror configuration. But, they contain a file syetem, so we will wipe them
+Let's say we want to set up `/dev/nvme0n1` and `/dev/nvme2n1` in a mirror configuration. But, they contain a file system, so we will wipe them
 **IMPORTANT:** This is a **weapon of mass destruction!** Once false move and you can PERMANENTLY destroy data. Including your own system disk. No questions or confirmation will be asked, and it CANNOT BE UNDONE, because you are literally overwriting everything with randomly generated data.
 
 So, let's fill the drives with random data. This is also good as a stress test: if the drive overheats, slows down, and cuts out, then it may not be suitable for the file server. Depending on size, this is going to take a while. In the meantime, you can take a look at some drive self-diagnostics with:  `sudo smartctl -a /dev/nvme0n1` and `sudo smartctl -a /dev/nvme0n1`. Note anything abnormal while you abuse these drives. Sectors should not be reallocated, data transfer speed should be consistent, and it should not heat up too much.
@@ -646,7 +646,7 @@ And just to verify, this is what we want to mount:
 
 ### Creating the credential file and hardening it
 
-The credential file is just a text file in a particular location. In this implementation, it stores the password unencrypted. So, we create the directory, and then create the file with IO redirection, then set the permissions so that only `root` can read it.
+The credential file is just a text file in a particular location. In this implementation, it stores the password unencrypted. So, we create the directory, and then create the file with one of the best text editors available, then set the permissions so that only `root` can read it.
 
 ```bash
 $ sudo mkdir /etc/samba/credentials
@@ -751,7 +751,9 @@ Note that there is an extra option, `x-systemd.after=network-online.target`, whi
 
 Verify that it works after a `sudo reboot` with `mount`.
 
-## Syncing, and scheduling thereof
+## [Syncing, and scheduling thereof](sync_setup.md)
+
+This is a whole different matter, and [it got its own document. Have a read.](sync_setup.md)
 
 ## Web server
 
@@ -838,4 +840,4 @@ Change the config file to:
 
 Restart apache2 with `sudo service apache2 restart`, and if you have a valid `index.html` in `/mnt/zfs_pool/volciclab-storage/website/`, then the web server should load it when you type [http://192.168.42.6](http://192.168.42.6) in your browser.
 
-Again, this set-up is very simple, and this is not exposed to the Internet, so it will only be accessible from within the NYUAD network (if you know the IP), and via the volciclab network. It's not super secure, there is no encryption or anything, but there isn't any data here to be shared either. Apache2 will not allow getting out of the document root directory, unless you specifically set it up. It's really to test connection and I have this rudimentary speedtest, because it works in the application layer, unlike iPerf.
+Again, this set-up is very simple, and this is not exposed to the Internet, so it will only be accessible from within the NYUAD network (if you know the IP), and via the volciclab network. It's not super secure, there is no encryption or anything, but there isn't any data here to be shared either. Apache2 will not allow getting out of the document root directory, unless you specifically set it up to do so. It's really to test connection and I have this rudimentary speedtest, because it works in the application layer, unlike iPerf3.

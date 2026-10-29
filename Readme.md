@@ -6,7 +6,7 @@ This is a repository of all the internally-made scripts and applications for the
 
 When you come visit the lab, the wiring on the truss may not look like much, but there are more than 120 metres of Ethernet cables routed in it. Here is why:
 
-![Now you probably see why I needed to write this all down!](img/volciclab_network_aug_2026.png "Now you probably see why I needed to write this all down!")
+![Now you probably see why I needed to write this all down!](img/volciclab_network_oct_2026.png "Now you probably see why I needed to write this all down!")
 
 All the local networks inside the lab are isolated from the outside world by default via the router's firewall. The camera network is connected to the Linksys 48-port PoE switch, with the subnet of `192.168.69.x`. The Volciclab network as two WiFi access points: `Volciclab-2.4G`, `Volciclab-5G` and `Volciclab-6G`. The lab computers, the 3D printer, and the Optotrak SCUs are all connected to this. This network's IP addresses are on the subnet of `192.168.42.x`. For particular IP addresses, check for labels on the hardware in the lab, or refer to the network map.
 
@@ -46,9 +46,9 @@ If you have an own device or anything that doesn't support IEEE 802.1X, you can 
 | `192.168.42.10` | `Static IP` | Internal Ethernet connector of the main unit [of the UR3e robot](robot_server/Readme.md). |
 | `192.168.42.11` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-one` The 200 Gbit/s link's static IP address is `192.168.43.11`. |
 | `192.168.42.12` | `Static IP` | `![via WiFi]`, connected to `Volciclab-6G` `volciclab-spark-two` The 200 Gbit/s link's static IP address is `192.168.43.12`. |
-| `192.168.42.15` | `Static IP` | `wls5` (wifi) on `zoltan-nyuad-desktop`. |
 | `192.168.42.16` | `Static IP` | `LAN2` port on NAS (also on volciclab-nas.local:9999), located on top of the silver file server and AI inference rack. |
 | `192.168.42.50 ... 249` | `DHCP Range` | Configured DHCP range for literally every other device on the network. |
+| `192.168.42.79` | `DHCP Reserved` | wifi on `zoltan-nyuad-desktop`. |
 | `192.168.42.123` | `DHCP Reserved` | Bambu 3D printer, when configured in LAN mode, plugged to a LAN port of the router. |
 | `192.168.42.132` | `DHCP Reserved` | Philips Hue Bridge. |
 | `192.168.42.207` | `DHCP Reserved` | 2.5G Ethernet port of `volciclab-nuc`. |
@@ -91,7 +91,7 @@ There are two sets of lights in the lab. There is a set of Philips Hue lights fo
 
 This is a collection of scripts for implementing an experiment using a stand-alone Andorid VR headset and Unity.
 
-### [Data and archival management](data_management_and_archival.md)
+### [Data and archival management](data_management/Readme.md)
 
 While there are cold-storage backups regularly made, this is a special regime that uses optical discs. May we never need this. These are neither incremental nor 'Towers of Hanoi' backups, they are just full backups that are to be taken yearly, ideally during the short time time when there is no data actively being collected.
 
@@ -106,4 +106,5 @@ We have LLM servers for isolated agentic coding and exploratory data analysis, a
 | Ollama | http://192.168.42.11:11434 | 128 GB |
 | Ollama | http://192.168.42.12:11434 | 128 GB |
 | vLLM | http://192.168.42.11:8000 | 256 GB (limited to 200 Gbit/s across nodes!) |
-| Lemonade | http://192.168.42.11:13305 | 128 GB |
+
+For a list of models, look at config file generator scripts in `X:\Zoltan\local_ai_stuff`
