@@ -841,3 +841,90 @@ Change the config file to:
 Restart apache2 with `sudo service apache2 restart`, and if you have a valid `index.html` in `/mnt/zfs_pool/volciclab-storage/website/`, then the web server should load it when you type [http://192.168.42.6](http://192.168.42.6) in your browser.
 
 Again, this set-up is very simple, and this is not exposed to the Internet, so it will only be accessible from within the NYUAD network (if you know the IP), and via the volciclab network. It's not super secure, there is no encryption or anything, but there isn't any data here to be shared either. Apache2 will not allow getting out of the document root directory, unless you specifically set it up to do so. It's really to test connection and I have this rudimentary speedtest, because it works in the application layer, unlike iPerf3.
+
+## Network Time Protocol (NTP) server
+
+For normal operations, the latency of the network and computers is so small that it is effectively considered to be zero. However, when it comes to time-sensitive streaming applications where knowing the exact figure of latency is critical, disciplined system clocks are necessary. In order to discipline the system clocks on the lab computers, an amateur radio program [BktTimeSync](https://www.maniaradio.it/en/bkttimesync.html) is used. While this is principally an amateur radio software, it is written to override the stock Windows timekeeping service, and allows a more precise synchronisation of the system clock.
+
+Then comes the question of what to synchronise to. Externally, we have `ae.pool.ntp.org`, but due to poor external network connectivity, this may not always work. The solution would be a Stratum 0 or Stratum 1 NTP server. A Stratum 1 (GPS-assisted) implementation unfeasible - considering the recent armed conflict in the area, GPS (or nowadays: GNSS) is easily jammed or spoofed - not just the American GPS system, but also the Chinese Beidou, the Russian GLONASS, and the Europeran Galileo too. Besides, the lab is located deep within a concrete building, pulling in long cablink for an external GNSS antenna connection is also not possible. While it would be theroretically possible to have an oven-controlled crystal oscillator (or OCXO)-based system, even that would need additional GPS assistance. The _real jam_ would be getting a Stratum 0 system with an atomic clock - but imporing anyting containing Cesium or Rubidium duing an armed conflict is difficult, and setting up an atomic clock for essentially a psychology lab is overkill.
+
+So, as a compromise, the server is set up as a Stratum 3 NTP server, which uses existing network infrastructure to syncronise time from _multiple_ NTP servers, and try to maintain a healthy compromise in terms of accuracy. Then, all other computers are syncronised with this time server, making sure that all system clocks are in agreement with each other, idealy to the nearest **millisecond**: in this implementation, **it doesn't matter that the system clocks do not show the accurate time, as long as all of them are in agreement with each other**.
+
+Since the server is an Ubuntu-based installation, `chrony` is already installed by default, so it is a mere matter of setting it up. So let's see what we have:
+
+```bash
+$ chronyc -n tracking
+Reference ID    : B97DBE7A (185.125.190.122)
+Stratum         : 3
+Ref time (UTC)  : Thu Nov 05 12:20:01 2026
+System time     : 0.000512001 seconds fast of NTP time
+Last offset     : -0.000102387 seconds
+RMS offset      : 0.000445223 seconds
+Frequency       : 3.315 ppm slow
+Residual freq   : +0.001 ppm
+Skew            : 0.108 ppm
+Root delay      : 0.098370112 seconds
+Root dispersion : 0.008367216 seconds
+Update interval : 1024.6 seconds
+Leap status     : Normal
+```
+
+```bash
+$ chronyc -n sources
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^* 185.125.190.122               2  10   377   468  -1412us[-1515us] +/-   62ms
+^+ 185.125.190.123               2  10   377   455  -1778us[-1778us] +/-   69ms
+^+ 91.189.91.112                 2  10   377   277  -1727us[-1727us] +/-  122ms
+^+ 91.189.91.113                 2  10   377   250  +2550us[+2550us] +/-  124ms
+^- 185.125.190.121               2  10   377   785  +1509us[+1406us] +/-   66ms
+```
+
+From `chrony`, we don't want anything exotic: add some extra time servers, keep sycning times, and to act as a good old-fashioned NTP server on port 123. Also, the NTP server should only be exposed to the lab internal network.
+
+These lines below are the modifications to be added to `/etc/chrony/chrony.conf`. Note that the option 'pool' means that the same DNS name can resolve to multiple IP addresses. This is a service that is provided by volunteers, so not all hosts in the pool may be operational. Also note that there may be other, internal NYUAD IP addresses that are not shown here.
+
+```conf
+# Some local time servers that are to be used
+pool ae.pool.ntp.org iburst maxsources 16
+server 91.230.41.238 iburst
+
+# Only serve requests from the local network (i.e. deny everything else)
+allow 192.168.42.0/24
+
+# Allow both secure NTS access and ordinary unencrypted NTP servers.
+authselectmode mix
+```
+
+Then, restart the service by: `$ sudo systemctl restart chrony`
+
+Verify operation by setting 'NTP Server' in BktTimeSync to `192.168.42.6`, and press 'Sync now'.
+
+Also, you can list the current sources. `91.230.41.238` is a public IP address, which resolves to `ad-ib.abudhabi.nyu.edu`.
+
+```bash
+$ chronyc sources -v
+
+  .-- Source mode  '^' = server, '=' = peer, '#' = local clock.
+ / .- Source state '*' = current best, '+' = combined, '-' = not combined,
+| /             'x' = may be in error, '~' = too variable, '?' = unusable.
+||                                                 .- xxxx [ yyyy ] +/- zzzz
+||      Reachability register (octal) -.           |  xxxx = adjusted offset,
+||      Log2(Polling interval) --.      |          |  yyyy = measured offset,
+||                                \     |          |  zzzz = estimated error.
+||                                 |    |           \
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^? 47.91.111.180                 2   6   377    38  -2736us[-2736us] +/-  116ms
+^- 89.36.162.11                  2   6   377    40  +5073us[+3215us] +/-   26ms
+^? 31.56.211.153                 2   6   377    41    -23ms[  -24ms] +/-  128ms
+^? v417889.hosted-by-vdsina>     2   6   377    36  +5365us[+5365us] +/-  101ms
+^? ad-ib.abudhabi.nyu.edu        0   8     0     -     +0ns[   +0ns] +/-    0ns
+^* ntp-nts-2.ps5.canonical.>     2   6   377    38  +3480us[+1621us] +/-   67ms
+^+ ntp-nts-3.ps5.canonical.>     2   6   377    36   +218us[ +218us] +/-   63ms
+^+ ntp-nts-2.ps6.canonical.>     2   6   377    41   -444us[-2303us] +/-  119ms
+^+ ntp-nts-3.ps6.canonical.>     2   6   377    40  +9136us[+7278us] +/-  128ms
+^- ntp-nts-1.ps5.canonical.>     2   6   377    36  -6548us[-6548us] +/-   59ms
+```
+
+The freshly added time servers may take some time (the default sync interval is 1024 seconds) to be measured properly, until then, they will be shown unusable. Now evey computer on the network can be syncronised to this time source.
