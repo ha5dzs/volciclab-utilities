@@ -133,8 +133,8 @@ public class universeRelocatorScript : MonoBehaviour
              * update the parent coordinate system, and then request to stop streaming.
              */
 
-        // Update the boolean. This will prevent this part from running again unless the async function sets it to true.
-        requestUpdateNow = false;
+            // Update the boolean. This will prevent this part from running again unless the async function sets it to true.
+            requestUpdateNow = false;
 
             /*
              * Send the request to the server

@@ -10,32 +10,13 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class SilverAnnulus : MonoBehaviour
 {
-    
-    int segments = 100;
 
-    /*
-     * This is just for a demo, so it's quick and dirty.
-     * But, you can use your own mesh, own shaders, etc.
-     * 
-     * These are updated in each frame, depending on what we do.
-     * 
-     * Tunnel vision:
-     *  -innerRadius: 0.15f
-     *  -outerRadius: 15.0f
-     *  
-     * Central scotoma
-     *  -innerRadius: 0.0f
-     *  -outerRadius: 0.2f
-     *  
-     * No deficit:
-     *  -innerRadius: 10f;
-     *  -outerRadius: 30f;
-     */
+    //int segments = 100;
+    int segments = 36;
 
-    float innerRadius = 10f;
-    float outerRadius = 50f;
-
-    int current_visual_deficit_type = 0;
+    public static float innerRadius = 0f;
+    float previousOuterRadius = 0.0f;
+    public static float outerRadius = 0.001f;
 
     MeshFilter meshFilter;
     MeshRenderer meshRenderer;
@@ -46,59 +27,42 @@ public class SilverAnnulus : MonoBehaviour
         meshFilter.mesh = CreateAnnulusMesh();
         
         meshRenderer = GetComponent<MeshRenderer>();
-        // I disabled this stuff, material is managed with a fixed material in the assets.
-        //meshRenderer.material = new Material(Shader.Find("Standard"));
-        //meshRenderer.material.color = Color.gray; // Silver color
+        
+        Debug.Log("SilverAnnulus(): Start() called. Current position is: " + transform.position);
+
     }
 
 
 
     void Update()
     {
-        // we compare the local variable here with the modeSetter script loaded to a different GameObject
-        if(current_visual_deficit_type != modeSetter.visual_deficit_type)
+
+        // outerRadius is static, can be adjusted from an external script
+
+
+        if (outerRadius != previousOuterRadius)
         {
-            current_visual_deficit_type = modeSetter.visual_deficit_type; // Update the variable
-
-            Debug.Log(string.Format("Switching to visual deficit type {0}\n", current_visual_deficit_type));
-
-            // ASCII 0, 1, 2...
-            switch(current_visual_deficit_type)
-            {
-                case 48:
-                    // Normal vision
-                    innerRadius = 10f;
-                    outerRadius = 11f;
-                    break;
-                case 49:
-                    // Central scotoma
-                    innerRadius = 0.0f;
-                    outerRadius = 0.25f;
-                    break;
-
-                case 50:
-                    // Tunnel vision
-                    innerRadius = 0.15f;
-                    outerRadius = 15.0f;
-                    break;
-
-                default:
-                    // Default is normal vision.
-                    innerRadius = 10f;
-                    outerRadius = 50f;
-                    break;
-            }
-
-            Debug.Log(string.Format("Switching visual deficit dimensions to: {0}, {1}\n", innerRadius, outerRadius));
+            Debug.Log("SilverAnnulus(): Outer radius changed: " + outerRadius);
+            // Handle the change in outer radius here.
+            previousOuterRadius = outerRadius;
             // Update the mesh.
             meshFilter = GetComponent<MeshFilter>();
             meshFilter.mesh = null; // Delete the existing mesh.
             meshFilter.mesh = CreateAnnulusMesh(); // Create a msh with the updated dimensions.
             meshRenderer = GetComponent<MeshRenderer>();
 
+
+            // I disabled this stuff, material is managed with a fixed material in the assets.
+            //meshRenderer.material = new Material(Shader.Find("Standard"));
+            meshRenderer.material.color = Color.gray; // Silver color
+            // Render the thing above everything, even if the object is behind others.
+            //meshRenderer.sortingLayerName = "Foreground";
+            //meshRenderer.sortingOrder = 9999; // A high sorting order to ensure it renders on top.
+            //meshRenderer.material.SetInt("_ZWrite", 0); // Disable depth writing
+            //meshRenderer.material.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
+
         }
-
-
+        
     }
 
 
