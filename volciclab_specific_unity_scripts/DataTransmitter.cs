@@ -47,7 +47,8 @@ using UnityEngine;
  *   HeadsetRotation      CenterEyeAnchor          .transform.rotation  (world, quat)
  *   GazeVectorAzimuth    GazeContingentTransform2.CurrentGazeVector.x (deg)
  *   GazeVectorElevation  GazeContingentTransform2.CurrentGazeVector.y (deg)
- *   EyelidPosition       GazeContingentTransform2.EyelidMean          (0 open .. 1 closed)
+ *   EyelidLeft           GazeContingentTransform2.LeftEyelidWeight    (0 open .. 1 closed)
+ *   EyelidRight          GazeContingentTransform2.RightEyelidWeight   (0 open .. 1 closed)
  *   ScotomaEnabled       VisionStaticAnnulus.renderEnabled
  *   ScotomaInnerAngle    VisionStaticAnnulus.innerDiameter            (deg)
  *   ScotomaOuterAngle    VisionStaticAnnulus.outerDiameter            (deg)
@@ -60,7 +61,7 @@ using UnityEngine;
  *   coordinates (m)        3 decimals   (millimetre)
  *   viewing angles (deg)   1 decimal    (0.1 deg)
  *   quaternions            4 decimals   (1e-4)
- *   eyelid (0..1)          4 decimals
+ *   eyelids (2 x 0..1)     4 decimals each
  *   timestamp              integer Unix ms (13 digits)
  * A typical record is well under 450 bytes - ample headroom under the ~1400-byte
  * single-packet cap (MTU 1500 including overhead).
@@ -262,7 +263,12 @@ public class DataTransmitter : MonoBehaviour
             Quaternion headRot = centerEyeTransform.rotation;
             float gazeAz = gaze.CurrentGazeVector.x;
             float gazeEl = gaze.CurrentGazeVector.y;
-            float eyelidMean = gaze.EyelidMean;
+            // Both eyelids separately (not the mean): a participant closing ONE eye
+            // (to look "behind" / through the scotoma) would read ~0.5 as a mean —
+            // indistinguishable from a half-blink — but with per-eye fields the closed
+            // eye is unambiguously ~1 on exactly one side.
+            float eyelidL = gaze.LeftEyelidWeight;
+            float eyelidR = gaze.RightEyelidWeight;
             bool scotomaEnabled = scotomaVision.renderEnabled;
             float innerAngle = scotomaVision.innerDiameter;
             float outerAngle = scotomaVision.outerDiameter;
@@ -273,7 +279,7 @@ public class DataTransmitter : MonoBehaviour
             string json = BuildJson(
                 timestampMs,
                 headPos, headRot,
-                gazeAz, gazeEl, eyelidMean,
+                gazeAz, gazeEl, eyelidL, eyelidR,
                 scotomaEnabled, innerAngle, outerAngle, distance,
                 scotomaPos, scotomaRot);
 
@@ -300,7 +306,7 @@ public class DataTransmitter : MonoBehaviour
      */
     string BuildJson(long timestampMs,
                      Vector3 headPos, Quaternion headRot,
-                     float gazeAz, float gazeEl, float eyelidMean,
+                     float gazeAz, float gazeEl, float eyelidL, float eyelidR,
                      bool scotomaEnabled, float innerAngle, float outerAngle, float distance,
                      Vector3 scotomaPos, Quaternion scotomaRot)
     {
@@ -312,7 +318,8 @@ public class DataTransmitter : MonoBehaviour
                "\"HeadsetRotation\":[" + F4(headRot.x) + "," + F4(headRot.y) + "," + F4(headRot.z) + "," + F4(headRot.w) + "]," +
                "\"GazeVectorAzimuth\":" + F1(gazeAz) + "," +
                "\"GazeVectorElevation\":" + F1(gazeEl) + "," +
-               "\"EyelidPosition\":" + F4(eyelidMean) + "," +
+               "\"EyelidLeft\":" + F4(eyelidL) + "," +
+               "\"EyelidRight\":" + F4(eyelidR) + "," +
                "\"ScotomaEnabled\":" + enabledStr + "," +
                "\"ScotomaInnerAngle\":" + F1(innerAngle) + "," +
                "\"ScotomaOuterAngle\":" + F1(outerAngle) + "," +

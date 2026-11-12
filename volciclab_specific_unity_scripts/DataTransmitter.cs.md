@@ -43,7 +43,8 @@ PascalCase keys (human-readable, fixed order), hand-formed string (not `JsonUtil
 | `HeadsetRotation` | `CenterEyeAnchor.transform.rotation` | quaternion (world) | 4 decimals |
 | `GazeVectorAzimuth` | `GazeContingentTransform2.CurrentGazeVector.x` | degrees | 1 decimal |
 | `GazeVectorElevation` | `GazeContingentTransform2.CurrentGazeVector.y` | degrees | 1 decimal |
-| `EyelidPosition` | `GazeContingentTransform2.EyelidMean` | 0 = open … 1 = closed | 4 decimals |
+| `EyelidLeft` | `GazeContingentTransform2.LeftEyelidWeight` | 0 = open … 1 = closed | 4 decimals |
+| `EyelidRight` | `GazeContingentTransform2.RightEyelidWeight` | 0 = open … 1 = closed | 4 decimals |
 | `ScotomaEnabled` | `VisionStaticAnnulus.renderEnabled` | bool | `true`/`false` |
 | `ScotomaInnerAngle` | `VisionStaticAnnulus.innerDiameter` | degrees | 1 decimal |
 | `ScotomaOuterAngle` | `VisionStaticAnnulus.outerDiameter` | degrees | 1 decimal |
@@ -56,13 +57,14 @@ PascalCase keys (human-readable, fixed order), hand-formed string (not `JsonUtil
 **Example record** (shape only — values are illustrative):
 
 ```json
-{"TimestampMs":1764904800123,"HeadsetPosition":[0.050,0.180,0.320],"HeadsetRotation":[0.7071,0.0000,0.7071,0.0000],"GazeVectorAzimuth":-12.5,"GazeVectorElevation":3.7,"EyelidPosition":0.1204,"ScotomaEnabled":true,"ScotomaInnerAngle":10.0,"ScotomaOuterAngle":40.0,"ScotomaDistance":0.500,"ScotomaPosition":[0.098,0.010,-0.567],"ScotomaRotation":[0.6934,-0.0204,0.7195,0.0141]}
+{"TimestampMs":1764904800123,"HeadsetPosition":[0.050,0.180,0.320],"HeadsetRotation":[0.7071,0.0000,0.7071,0.0000],"GazeVectorAzimuth":-12.5,"GazeVectorElevation":3.7,"EyelidLeft":0.1180,"EyelidRight":0.1251,"ScotomaEnabled":true,"ScotomaInnerAngle":10.0,"ScotomaOuterAngle":40.0,"ScotomaDistance":0.500,"ScotomaPosition":[0.098,0.010,-0.567],"ScotomaRotation":[0.6934,-0.0204,0.7195,0.0141]}
 ```
 
 ## Behaviour + gotchas
 
 - **Decimation adapts mid-stream.** The cadence is `frameCounter % decimation == 0`, so a decimation change takes effect from the very next frame — no reset bookkeeping, `0` stops cleanly, and no divide-by-zero (guarded by `decimation > 0`).
-- **A blink is a reading; an invalid frame holds the last value.** `EyelidPosition` comes from `GazeContingentTransform2.EyelidMean`, which is recorded *before* the eyes-closed gate (so a closed eyelid ≈ 1 is captured) but *after* the validity gate — while the gaze sample is invalid the public field simply keeps its previous value. A dropped-tracking streak therefore reads as a flat run, never a spurious jump to 0/NaN. See `GazeContingentTransform2.cs.md` for the gate ordering.
+- **Both eyelids are streamed separately, on purpose.** `EyelidLeft`/`EyelidRight` come from `GazeContingentTransform2.LeftEyelidWeight`/`RightEyelidWeight`, which are recorded *before* the eyes-closed gate (so a closed eyelid ≈ 1 is captured) but *after* the validity gate — while the gaze sample is invalid the public fields simply keep their previous value. A dropped-tracking streak therefore reads as a flat run, never a spurious jump to 0/NaN. See `GazeContingentTransform2.cs.md` for the gate ordering.
+- **Why not the mean (the old `EyelidPosition` field)?** The single-eye "cheat" a participant can do — closing ONE eye to look through / behind the scotoma — reads as ≈ 0.5 averaged, indistinguishable from a half-blink. Per-eye, the closed eye is unambiguously ≈ 1 on exactly one side while the open one stays ≈ 0 (2026-11-09, added for the analysis workstream). If analysis still wants a single scalar, derive `(EyelidLeft + EyelidRight) / 2`.
 - **`ScotomaDistance` is the live depth.** Read as the scotoma anchor pivot's `.localPosition.magnitude` — the exact `D` that `VisionStaticAnnulus` itself uses for its pose. So the streamed distance is the *actually rendered* distance and picks up `40004` depth changes automatically, with zero coupling.
 - **One record per packet, no trailing newline.** The sink owns the line terminator and writes `<sink_ts>,<payload>\n`. `DataTransmitter` transmits only the payload bytes.
 - **First record is logged.** The first successful send logs the full record and its byte count — a handy on-device smoke check that the field set, the precision, and the clock are all wired up before trusting a long capture.
@@ -79,7 +81,7 @@ PascalCase keys (human-readable, fixed order), hand-formed string (not `JsonUtil
 
 **Complete and verified** on the Quest Pro against the lab `UniversalDataSink` (capture `datasink_test.csv`: 1,338 records over 14.9 s):
 
-- **Every one of the 1,338 lines is valid JSON** with exactly the 12 keys above — zero parse failures, zero key/shape mismatches.
+- **Every one of the 1,338 lines is valid JSON** with exactly the 12 keys above as of that run — zero parse failures, zero key/shape mismatches. (Field set since changed 2026-11-09: the single `EyelidPosition` mean was replaced by `EyelidLeft` + `EyelidRight`, so the current record has 13 keys — re-verify on device before trusting a new capture.)
 - **Frame rate:** capture deltas (the inner `TimestampMs`) are a steady ~11 ms (median 11.0 ms → **90.9 records/s at decimation 1** on the 90 Hz panel) — the render clock is smooth even where the arrival clock is clustered (see below).
 - **Zero packet loss:** the sink received 1,337/1,338 intervals → 89.7 records/s, matching the send rate.
 - **End-to-end latency (sink arrival − `TimestampMs`):** **35 ms median, 38.9 ms mean** (min 33 / max 120 ms) over Wi-Fi through two repeater hops; no drift across the capture (first half 38.2 ms, second half 39.7 ms).
@@ -89,7 +91,7 @@ PascalCase keys (human-readable, fixed order), hand-formed string (not `JsonUtil
 
 ## Relations
 
-- Reads `GazeContingentTransform2`'s public surface — `CurrentGazeVector`, `EyelidMean` (see `GazeContingentTransform2.cs.md`).
+- Reads `GazeContingentTransform2`'s public surface — `CurrentGazeVector`, `LeftEyelidWeight`/`RightEyelidWeight` (see `GazeContingentTransform2.cs.md`).
 - Reads `VisionStaticAnnulus`'s public surface — `renderEnabled`, `innerDiameter`, `outerDiameter` (see `VisionStaticAnnulus.cs.md`).
 - Timestamps from `NtpTimeSync.UnixTimeNowInMs()` (see `NtpTimeSync.cs.md`).
 - Sends to the lab `UniversalDataSink` (outside this repo).
